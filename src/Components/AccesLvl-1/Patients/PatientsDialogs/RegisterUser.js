@@ -1,27 +1,24 @@
 import React from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
-import AddressForm from './SpecialistsForm';
+import RegisterForm from './RegisterUserForm';
 
-class AddressDialog extends React.Component {
+class RegisterDialog extends React.Component {
   state = {
     open: false,
-    currentPacient: {},
   };
   constructor(props) {
     super(props);
-   console.log("HERE?")
-    this.state.open = this.props.open
-    this.state.currentPacient = this.props.currentPacient;
+    this.state.open = this.props.open;
   }
 
   handleClickOpen = () => {
     this.setState({ open: true });
   };
 
-  handleClose = (name) => {
+  handleClose = () => {
     this.setState({ open: false });
-    this.props.callback("specialistDialog")
+    this.props.callback("addNewPatientDialog");
   };
 
   render() {
@@ -31,12 +28,11 @@ class AddressDialog extends React.Component {
           open={this.state.open}
           onClose={this.handleClose}
           maxWidth='lg'
-          aria-labelledby="Dialog Modify Address"
-          aria-describedby="Address can be modified"
+          aria-labelledby="Dialog Register User"
+          aria-describedby="Register can be modified"
         >
-          
           <DialogContent>
-            <AddressForm onClose={this.handleClose} pacient={this.state.currentPacient} />
+            <RegisterForm onClose={this.handleClose} />
           </DialogContent>
         </Dialog>
       </div>
@@ -44,4 +40,4 @@ class AddressDialog extends React.Component {
   }
 }
 
-export default AddressDialog;
+export default RegisterDialog;

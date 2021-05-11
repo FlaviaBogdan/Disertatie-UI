@@ -7,6 +7,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import { Typography } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
+import jwt_decode from 'jwt-decode';
 import { withRouter } from 'react-router-dom';
 
 const styles = theme => ({
@@ -34,7 +35,7 @@ class NavBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-   
+      currentUser: {}
     };
     this.navigate = this.navigate.bind(this);
   }
@@ -49,13 +50,25 @@ class NavBar extends React.Component {
         break;
       case 'Calendar':
         this.props.history.push(`/calendar`)
-        break;
-      case 'ContactUs':
-        this.props.history.push(`/contact-us`)
-        break;
+        break;    
       default:
         this.props.history.push(`/`)
         break;
+    }
+  }
+
+  async componentWillMount() {
+    const token = localStorage.usertoken
+    if (token) {
+      try {
+        const decoded = jwt_decode(token)
+
+        this.setState({
+          currentUser: decoded
+        })
+      } catch (err) {
+        alert(err);
+      }
     }
   }
 
@@ -67,42 +80,40 @@ class NavBar extends React.Component {
 
   render() {
     const { classes } = this.props;
-
     return (
       <React.Fragment>
         <RemoveScrollBar />
         {localStorage.usertoken ?
-              
-        <div className={classes.root}>
-          <CssBaseline />
-          <AppBar className={classes.appBar}>
-            <Toolbar>
-              <Typography className={classes.title2} variant="h6" noWrap>
-                Patients Monitoring
-          </Typography>
-              {/* <Button component={Link} to="/">
-                <AccountCircleIcon />
-              </Button> */}
-              <div className={classes.grow} />
-              <div className={classes.buttons}>
-              
-                <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Patients")} disabled={this.props.authentificatedUser}>
-                  Patients
-                </Button>
-                <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Calendar")}>
-                  Calendar
-                </Button>
-                <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Profile")}>
-                  Profile
-                </Button>
 
-                <Button size="large" className={classes.margin} color="inherit"onClick={this.logOut.bind(this)} >Sign Out</Button>
-              </div>
-            </Toolbar>
-          </AppBar>
-          
-        </div>
-        :
+          <div className={classes.root}>
+            <CssBaseline />
+            <AppBar className={classes.appBar}>
+              <Toolbar>
+                <Typography className={classes.title2} variant="h6" noWrap>
+                  Patients Monitoring
+          </Typography>
+                <div className={classes.grow} />
+            
+                  <div className={classes.buttons}>
+                    <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Patients")} disabled={this.props.authentificatedUser}>
+                      Patients
+                      </Button>
+                    <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Calendar")}>
+                      Calendar
+                    </Button>
+                    <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Profile")}>
+                      Profile
+                    </Button>
+                    <Button size="large" className={classes.margin} color="inherit" onClick={this.logOut.bind(this)} >Sign Out</Button>
+                  </div>
+                
+
+
+
+              </Toolbar>
+            </AppBar>
+          </div>
+          :
           this.props.history.push(`/login`)
         }
       </React.Fragment>
@@ -113,6 +124,5 @@ class NavBar extends React.Component {
 NavBar.propTypes = {
   classes: PropTypes.object.isRequired,
 };
-
 
 export default withRouter(withStyles(styles)(NavBar));

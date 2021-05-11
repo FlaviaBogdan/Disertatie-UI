@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
-
 import { withRouter } from 'react-router-dom'
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
@@ -11,7 +9,7 @@ import ContactPhoneIcon from '@material-ui/icons/ContactPhone';
 import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
 import jwt_decode from 'jwt-decode';
-import { modifyCom} from '../../utils/UserFunctions'
+import { modifyCom } from '../../../utils/UserFunctions'
 
 
 
@@ -36,27 +34,11 @@ const styles = theme => ({
         padding: theme.spacing.unit * 3,
     },
 
-    avatar: {
-        height: '60px',
-        width: '60px',
-        backgroundColor: theme.palette.primary.main,
-    },
-
-    margins: {
-        padding: theme.spacing.unit * 3,
-    },
-    margins2: {
-        paddingLeft: theme.spacing.unit * 3,
-        paddingRight: theme.spacing.unit * 3,
-    },
     form: {
         width: '100%', // Fix IE 11 issue.
         marginTop: theme.spacing.unit,
     },
 
-    submit: {
-        marginTop: theme.spacing.unit * 3,
-    },
     margin: {
         margin: theme.spacing(1),
     },
@@ -85,7 +67,7 @@ const ValidationTextField = withStyles({
     },
 })(TextField);
 
-class LoginForm extends React.Component {
+class CommunicationForm extends React.Component {
     state = {
         phone: '',
         fix: '',
@@ -97,12 +79,10 @@ class LoginForm extends React.Component {
         this.state.phone = this.props.currentUser.phone;
         this.state.fix = this.props.currentUser.fix;
         this.state.fax = this.props.currentUser.fax;
-
     }
 
     async componentWillMount() {
         const token = localStorage.usertoken
-
         if (token) {
             try {
                 const decoded = jwt_decode(token)
@@ -114,18 +94,15 @@ class LoginForm extends React.Component {
             } catch (err) {
                 alert(err);
             }
-
         }
-
     }
+
     changeField = (event) => {
-        console.log(event.target.id);
         let userToLogin = { ...this.state };
         userToLogin[event.target.id] = event.target.value;
         this.setState({
             ...userToLogin
         })
-        console.log(this.state.country);
     }
 
     onSubmit = (e) => {
@@ -137,25 +114,21 @@ class LoginForm extends React.Component {
         }
         modifyCom(comDetails);
         this.props.onClose("modifyCommunicationDialogOpen");
- 
         e.preventDefault();
     }
 
 
     render() {
         const { classes } = this.props;
-
         return (
             <main className={classes.main}>
                 <CssBaseline />
                 <div className={classes.paper}>
-                  
-                        <ContactPhoneIcon style={{
+                    <ContactPhoneIcon style={{
                         color: '#01579b',
-                            height: '60px',
+                        height: '60px',
                         width: '60px',
-                        }} />
-                   
+                    }} />
                     <Typography component="h6" variant="h6" style={{ marginBottom: '15px', marginTop: '10px' }}>
                         Modify Communication Channels
                     </Typography>
@@ -172,7 +145,6 @@ class LoginForm extends React.Component {
                     </Grid>
                     <div style={{ height: '20px' }} />
                     <form className={classes.form} onSubmit={this.onSubmit}>
-
                         <ValidationTextField
                             InputProps={{
                                 className: classes.multilineColor
@@ -208,15 +180,13 @@ class LoginForm extends React.Component {
                             variant="outlined"
                             onChange={this.changeField.bind(this)}
                         />
-
-
                         <Button
                             fullWidth
                             type="submit"
                             variant="contained"
                             color="primary"
                             className={classes.submit}
-                         
+
                         >
                             Submit Changes
                         </Button>
@@ -227,8 +197,8 @@ class LoginForm extends React.Component {
     }
 }
 
-LoginForm.propTypes = {
+CommunicationForm.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-export default withRouter(withStyles(styles)(LoginForm));
+export default withRouter(withStyles(styles)(CommunicationForm));
