@@ -15,6 +15,7 @@ import './Login.css';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import Card from '@material-ui/core/Card';
 import { login } from '../utils/UserFunctions';
+import jwt_decode from 'jwt-decode';
 import CardContent from '@material-ui/core/CardContent';
 
 const styles = theme => ({
@@ -25,7 +26,7 @@ const styles = theme => ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`,
+        padding: `${theme.spacing(2)}px ${theme.spacing(3)}px ${theme.spacing(3)}px`,
     },
 
     avatar: {
@@ -42,11 +43,11 @@ const styles = theme => ({
 
     form: {
         width: '100%', // Fix IE 11 issue.
-        marginTop: theme.spacing.unit * 0.5,
+        marginTop: theme.spacing(0.5),
     },
 
     submit: {
-        marginTop: theme.spacing.unit * 3,
+        marginTop: theme.spacing(3),
     },
 
     root: {
@@ -57,7 +58,6 @@ const styles = theme => ({
         minWidth: 350,
         maxWidth: 400,
         position: 'absolute',
-
         minHeight: 400,
     }
 });
@@ -86,14 +86,19 @@ class LoginForm extends React.Component {
             password: this.state.password
         }
         login(user).then(res => {
-            if (res === 200) {
-                console.log("HERE")
-                this.props.history.push(`/patients`)
-            } else if (res === 401) {
-                console.log("Here?");
+            if (res.status === 200) {
+                console.log("RES", res)
+                const decoded = jwt_decode(res.data)
+                if (decoded.lvlAccess === 1 || decoded.lvlAccess === 2){
+                    this.props.history.push(`/patients`)
+                }
+                else{
+                    this.props.history.push(`/`)
+                }
+             
+            } else if (res.status === 401) {
                 alert("Wrong username or password");
             } else {
-                console.log("Here2?");
                 alert("An error ocurred");
             }
         })
@@ -102,7 +107,6 @@ class LoginForm extends React.Component {
 
     render() {
         const { classes } = this.props;
-
         return (
             <header className="backgroundLogin">
                 <RemoveScrollBar />

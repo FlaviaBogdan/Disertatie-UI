@@ -1,9 +1,9 @@
 import React from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
-import ComForm from './ModifyGeneralDataForm';
+import GeneralDataForm from './ModifyGeneralDataForm';
 
-class CommunicationDialog extends React.Component {
+class GeneralDataDialog extends React.Component {
     state = {
         open: false,
         currentUser: {},
@@ -12,10 +12,6 @@ class CommunicationDialog extends React.Component {
         super(props);
         this.state.currentUser = this.props.currentUser
         this.state.open = this.props.open
-    }
-    componentWillMount = () => {
-        console.log("PROPS: ", this.props.currentUser)
-        console.log("STATE: ", this.state.currentUser)
     }
 
     handleClickOpen = () => {
@@ -37,9 +33,8 @@ class CommunicationDialog extends React.Component {
                     aria-labelledby="Dialog Modify Address"
                     aria-describedby="Address can be modified"
                 >
-
                     <DialogContent>
-                        <ComForm onClose={this.handleClose} currentUser={this.state.currentUser} />
+                        <GeneralDataForm onClose={this.handleClose} currentUser={this.state.currentUser} />
                     </DialogContent>
                 </Dialog>
             </div>
@@ -47,4 +42,4 @@ class CommunicationDialog extends React.Component {
     }
 }
 
-export default CommunicationDialog;
+export default GeneralDataDialog;

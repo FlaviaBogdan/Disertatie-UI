@@ -1,5 +1,4 @@
 import React from 'react';
-
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -16,20 +15,20 @@ import Collapse from '@material-ui/core/Collapse';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import DialogSpecialist from './PatientsDialogs/Specialists'
-import DialogAddress from './PatientsDialogs/ModifyAddress'
-import { getPatientsForUser, removeDoctorForPatient } from '../utils/UserFunctions'
+import DialogAddress from './PatientsDialogs/RegisterUser'
+import { getPatientsForUser, removeDoctorForPatient } from '../../utils/UserFunctions'
 import jwt_decode from 'jwt-decode'
 import withStyles from '@material-ui/core/styles/withStyles';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import Brightness1Icon from '@material-ui/icons/Brightness1';
-
 import Grid from '@material-ui/core/Grid';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import Button from '@material-ui/core/Button';
-
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
+
+
 const columns = [
-  { id: 'patientCode', label: 'Patient Code', minWidth: 100 },
+  { id: 'newImage', label: 'Img', minWidth: 100 },
   { id: 'firstName', label: 'First Name', minWidth: 100 },
   { id: 'lastName', label: 'Last Name', minWidth: 100 },
   { id: 'birthday', label: 'Birthday', minWidth: 100 },
@@ -39,39 +38,21 @@ const columns = [
   { id: 'gravity', label: 'Gravity', minWidth: 100 },
 ];
 
-// {
-//   id: 'size',
-//   label: 'Size\u00a0(km\u00b2)',
-//   minWidth: 170,
-//   align: 'right',
-//   format: (value) => value.toLocaleString('en-US'),
-// },
-// {
-//   id: 'density',
-//   label: 'Density',
-//   minWidth: 170,
-//   align: 'right',
-//   format: (value) => value.toFixed(2),
-// },
-
-function createData(patientCode, firstName, lastName, birthday, gender,  phone, severity, gravity, address, _id) {
-
+function createData(newImage, firstName, lastName, birthday, gender, phone, severity, gravity, address, _id) {
   return {
-    patientCode, firstName, lastName, birthday, gender, phone, severity, gravity, address: [
+    newImage, firstName, lastName, birthday, gender, phone, severity, gravity, address: [
       { country: address.country, city: address.city, postalCode: address.postalCode, street: address.street, details: address.adrLine }
-
     ],
     _id
-
   };
 }
 
 const styles = theme => ({
   container: {
-
     maxWidth: "100%",
     padding: "5px",
   },
+
   paper: {
     marginTop: '20px',
     display: 'flex',
@@ -94,39 +75,30 @@ const styles = theme => ({
 
 class Row extends React.Component {
   constructor(props) {
-    super(props);
-
-
+    super(props)
+    console.log("ROW CONSTR ", this.props.row.newImage)
+    // super(props);
     this.state = {
       open: false,
       open2: false,
       specialistDialog: false,
     };
-
     this.setOpen2 = this.setOpen2.bind(this);
     this.setOpen = this.setOpen.bind(this);
-
   }
+
+
   openForm(dialogName) {
-    console.log("DIALOG NAME2: " + dialogName)
     this.setState({ specialistDialog: true });
-    console.log("DIALOG NAME222: " + this.state.specialistDialog)
-
   }
+
   async callbackFromDialog(dialogName) {
     this.setState({ [dialogName]: false });
-    // const userDetails = await getUserDetails(this.state.currentUserID);
-    // console.log("CUURENT USER DETAILS:  ", userDetails.address)
-
-    // this.setState({
-    //   currentUser: userDetails,
-    //   currentAddress: userDetails.address
-    // });
     this.forceUpdate()
   }
 
-  unassignMe(id){
-    this.props.callbackUnassign(id);  
+  unassignMe(id) {
+    this.props.callbackUnassign(id);
   }
 
   setOpen2 = (event) => {
@@ -135,18 +107,18 @@ class Row extends React.Component {
       open2: newOp
     })
   };
+
   setOpen = (event) => {
     let newOp = !this.state.open;
     this.setState({
       open: newOp
     })
   };
+
   render() {
-
-
     return (
       <React.Fragment>
-        <TableRow >
+        <TableRow key={this.props.row._id}>
           <TableCell>
             <IconButton aria-label="expand row" size="small" onClick={() => this.setOpen(!this.state.open)}>
               {this.state.open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -154,18 +126,15 @@ class Row extends React.Component {
           </TableCell>
           <TableCell component="th" scope="row">
             <center>
-              <img src={this.props.row.image} style={{ width: "30px", height: "30px", borderRadius: "20px" }} />
+              <img src={this.props.row.newImage} alt="Profile" style={{ width: "100px", height: "100px", borderRadius: "80px" }} />
             </center>
           </TableCell>
           <TableCell align="left">{this.props.row.firstName}</TableCell>
           <TableCell align="left">{this.props.row.lastName}</TableCell>
           <TableCell align="left">{this.props.row.birthday}</TableCell>
           <TableCell align="left">{this.props.row.gender}</TableCell>
-
-      
           <TableCell align="left">{this.props.row.phone}</TableCell>
           <TableCell align="left">{this.props.row.severity}</TableCell>
-          {/* <TableCell align="left">{row.gravity}</TableCell> */}
           <TableCell align="left">
             {this.props.row.gravity === 1 ?
               < Brightness1Icon style={{ color: 'red' }} />
@@ -179,39 +148,33 @@ class Row extends React.Component {
           <TableCell>
             <Button color="primary" onClick={() => this.unassignMe(this.props.row._id)}>
               Unassign
-</Button>
-
+            </Button>
           </TableCell>
           <TableCell>
             <Button color="primary" onClick={() => this.openForm("specialistDialog")} >
               Request Specialist
-</Button>
-
+            </Button>
           </TableCell>
-        
           <TableCell>
             <IconButton aria-label="expand row" size="small" onClick={() => this.props.setLoading(this.props.row)}>
               {this.state.open2 ? <KeyboardArrowLeftIcon /> : <KeyboardArrowRightIcon />}
             </IconButton>
           </TableCell>
-
         </TableRow>
-        {this.state.specialistDialog && <DialogSpecialist open={this.state.specialistDialog} currentPacient={this.props.row} callback={(open) => this.callbackFromDialog(open)} />}
+        {this.state.specialistDialog && <DialogSpecialist open={this.state.specialistDialog} currentPatient={this.props.row} callback={(open) => this.callbackFromDialog(open)} />}
         <TableRow>
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
             <Collapse in={this.state.open} timeout="auto" unmountOnExit>
               <Box margin={1}>
                 <Typography variant="h6" gutterBottom component="div">
                   Address Details
-              </Typography>
+                </Typography>
                 {this.props.row.address.map((addressDetails) => (
                   <Grid container spacing={1}>
-
                     <Grid item xs={6}>
                       <Typography variant="body2" gutterBottom >
                         Country:   {addressDetails.country}
                       </Typography>
-
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="body2" gutterBottom component="div">
@@ -235,8 +198,6 @@ class Row extends React.Component {
                     </Grid>
                   </Grid>
                 ))}
-
-
               </Box>
             </Collapse>
           </TableCell>
@@ -246,12 +207,10 @@ class Row extends React.Component {
   }
 }
 
-
-class StickyHeadTable2 extends React.Component {
+class PatientsTable extends React.Component {
   constructor(props) {
+    
     super(props);
-
-
     this.state = {
       page: 0,
       rowsPerPage: 5,
@@ -260,6 +219,8 @@ class StickyHeadTable2 extends React.Component {
       currentUser: "",
       clickedPatient: [],
       addNewPatientDialog: false,
+      componentLoaded: false,
+      lvlAccess : 0,
     };
     this.handleChangePage = this.handleChangePage.bind(this);
     this.handleChangeRowsPerPage = this.handleChangeRowsPerPage.bind(this);
@@ -267,82 +228,76 @@ class StickyHeadTable2 extends React.Component {
   }
 
 
-  unassign(patID){
-    const details={
+  unassign(patID) {
+    const details = {
       patientDetailsID: patID,
-      doctor: this.state.currentUser
+      user: this.state.currentUser,
+      lvlAccess: this.state.lvlAccess
     }
-    console.log("patID " , details);
+
     removeDoctorForPatient(details).then(res => {
-
       if (res.status === 204) {
-        alert("You were succesfully unassigned as a doctor for patient " + patID);
-        getPatientsForUser(this.state.currentUser).then(patients => {
-        let a = []
-        // patientCode, firstName, lastName, birthday, gender,  emailAddress, phone, severity, gravity, city, country
-        for (let i = 0; i < patients.length; i++) {
-          console.log("PATIENTSSSS:", patients[i].illness)
-          let diseaseArray = patients[i].illness;
-          let disease = "";
-          for (let j = 0; j < diseaseArray.length; j++) {
-            if (j === 0 && j !== diseaseArray.length - 1) {
-              disease = diseaseArray[j] + "; ";
-            }
-            else if (j !== diseaseArray.length - 1) {
-              disease = disease + diseaseArray[j] + "; ";
-            } else {
-              disease = disease + diseaseArray[j];
+        alert("You were succesfully unassigned for patient " + patID);
+        getPatientsForUser(this.state.currentUser, this.state.lvlAccess).then(patients => {
+          let a = []
+          for (let i = 0; i < patients.length; i++) {
+            let diseaseArray = patients[i].illness;
+            let disease = "";
+            for (let j = 0; j < diseaseArray.length; j++) {
+              if (j === 0 && j !== diseaseArray.length - 1) {
+                disease = diseaseArray[j] + "; ";
+              }
+              else if (j !== diseaseArray.length - 1) {
+                disease = disease + diseaseArray[j] + "; ";
+              } else {
+                disease = disease + diseaseArray[j];
+              }
             }
 
+            let test = new Date(patients[i].dateOfBirth);
+            var dd = String(test.getDate()).padStart(2, '0');
+            var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = test.getFullYear();
+
+            let birthday = dd + '/' + mm + '/' + yyyy;
+            let image = patients[i].image;
+            let newImg = [image]
+
+            console.log("IMG ", newImg)
+            a.push(createData(image, patients[i].firstName, patients[i].lastName, birthday, patients[i].gender, patients[i].phone, disease, patients[i].gravityCode, patients[i].address, patients[i]._id))
           }
-          let test = new Date(patients[i].dateOfBirth);
-  
-          var dd = String(test.getDate()).padStart(2, '0');
-          var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-          var yyyy = test.getFullYear();
-          let birthday = dd + '/' + mm + '/' + yyyy;
-          console.log("IMG " , patients[i].image)
-          a.push(createData(patients[i].image, patients[i].firstName, patients[i].lastName, birthday, patients[i].gender, patients[i].phone, disease, patients[i].gravityCode, patients[i].address, patients[i]._id))
-        }
+
           this.setState({
             rows: a
           })
+
         })
-      } else if (res === 400) {
-
+      } 
+      else if (res === 400) {
         alert("Not found");
-      } else {
-
+      } 
+      else {
         alert("An error ocurred");
       }
     })
   }
 
   openForm(dialogName) {
-    console.log("DIALOG NAME: " + dialogName)
     this.setState({ [dialogName]: true });
-    console.log("TEST" , this.state.specialistDialog)
-
   }
+
   async callbackFromDialog(dialogName) {
     this.setState({ [dialogName]: false });
-    // const userDetails = await getUserDetails(this.state.currentUserID);
-    // console.log("CUURENT USER DETAILS:  ", userDetails.address)
-
-    // this.setState({
-    //   currentUser: userDetails,
-    //   currentAddress: userDetails.address
-    // });
     this.forceUpdate()
   }
-  setLoading = (test) => {
-    console.log("TEST CALLBACK: ", test)
 
-    this.setState({
+  setLoading = (test) => {
+     this.setState({
       loading: !this.state.loading,
       clickedPatient: test
     })
   };
+
   handleChangePage = (event, newPage) => {
     this.setState({
       page: newPage
@@ -356,19 +311,19 @@ class StickyHeadTable2 extends React.Component {
     })
   };
 
-
-
-
   async componentWillMount() {
     const token = localStorage.usertoken
     if (token) {
       try {
         const decoded = jwt_decode(token)
-        const patients = await getPatientsForUser(decoded._id);
+        console.log("decoded", decoded._id)
+        let id = decoded._id;
+        let accessLvl = decoded.lvlAccess;
+        console.log("lvl acc", accessLvl)
+        const patients = await getPatientsForUser(id, accessLvl);
+        console.log("Patients", patients)
         let a = []
-        // patientCode, firstName, lastName, birthday, gender,  emailAddress, phone, severity, gravity, city, country
         for (let i = 0; i < patients.length; i++) {
-          console.log("PATIENTSSSS:", patients[i].illness)
           let diseaseArray = patients[i].illness;
           let disease = "";
           for (let j = 0; j < diseaseArray.length; j++) {
@@ -389,37 +344,32 @@ class StickyHeadTable2 extends React.Component {
           var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
           var yyyy = test.getFullYear();
           let birthday = dd + '/' + mm + '/' + yyyy;
+
           let image = patients[i].image;
           let newImg = [image]
+
           console.log("IMG ", newImg)
-          a.push(createData(newImg, patients[i].firstName, patients[i].lastName, birthday, patients[i].gender, patients[i].phone, disease, patients[i].gravityCode, patients[i].address, patients[i]._id))
+          a.push(createData(image, patients[i].firstName, patients[i].lastName, birthday, patients[i].gender, patients[i].phone, disease, patients[i].gravityCode, patients[i].address, patients[i]._id))
         }
         this.setState({
           rows: a
         })
-        console.log("TESTFSDFSFDS   " + patients.length)
         this.setState({
-          currentUser: decoded._id
+          currentUser: decoded._id,
+          lvlAccess: decoded.lvlAccess
         })
       } catch (err) {
         alert(err);
       }
-
     }
     else {
       alert("USER NOT LOGGED IN")
     }
-
-
   }
 
   render() {
-
     const { classes } = this.props;
-
-
     return (
-
       <React.Fragment>
         {localStorage.usertoken ?
           <header className="App-Login" >
@@ -427,7 +377,6 @@ class StickyHeadTable2 extends React.Component {
             <RemoveScrollBar />
             {this.state.loading ?
               <Card className={classes.root}>
-
                 <CardContent className={classes.paper}>
                   <TableContainer className={classes.container} style={{ maxHeight: '500px' }}>
                     <Table stickyHeader aria-label="sticky table">
@@ -454,7 +403,7 @@ class StickyHeadTable2 extends React.Component {
                       </TableHead>
                       <TableBody>
                         {this.state.rows.slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage).map((row) => (
-                          <Row key={row.name} row={row} setLoading={this.setLoading} callbackUnassign={(patientID) => this.unassign(patientID)}/>
+                          <Row key={row.name} row={row} setLoading={this.setLoading} callbackUnassign={(patientID) => this.unassign(patientID)} />
                         ))}
                       </TableBody>
                     </Table>
@@ -468,17 +417,13 @@ class StickyHeadTable2 extends React.Component {
                     onChangePage={this.handleChangePage}
                     onChangeRowsPerPage={this.handleChangeRowsPerPage}
                   />
-
                   <Button color="primary" variant="contained" onClick={() => this.openForm("addNewPatientDialog")}>
                     Add new patient
                   </Button>
                   {this.state.addNewPatientDialog && <DialogAddress open={this.state.addNewPatientDialog} callback={(open) => this.callbackFromDialog(open)} />}
-
-
                 </CardContent>
               </Card>
               :
-
               <Card className={classes.root}>
                 <CardContent className={classes.paper}>
                   <Button variant="contained" color="primary" onClick={() => this.setLoading()}>
@@ -499,4 +444,4 @@ class StickyHeadTable2 extends React.Component {
   }
 }
 
-export default withStyles(styles)(StickyHeadTable2);
+export default withStyles(styles)(PatientsTable);

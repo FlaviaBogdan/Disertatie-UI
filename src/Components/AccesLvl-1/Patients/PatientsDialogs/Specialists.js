@@ -1,26 +1,26 @@
 import React from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
-import AddressForm from './ModifyAddressForm';
+import SpecialistsForm from './SpecialistsForm';
 
-class AddressDialog extends React.Component {
+class Specialists extends React.Component {
   state = {
     open: false,
-    address: {},
+    currentPatient: {},
   };
   constructor(props) {
     super(props);
-    this.state.address = this.props.address
     this.state.open = this.props.open
+    this.state.currentPatient = this.props.currentPatient;
   }
 
   handleClickOpen = () => {
     this.setState({ open: true });
   };
 
-  handleClose = (name) => {
+  handleClose = () => {
     this.setState({ open: false });
-    this.props.callback("addNewPatientDialog")
+    this.props.callback("specialistDialog")
   };
 
   render() {
@@ -30,12 +30,9 @@ class AddressDialog extends React.Component {
           open={this.state.open}
           onClose={this.handleClose}
           maxWidth='lg'
-          aria-labelledby="Dialog Modify Address"
-          aria-describedby="Address can be modified"
         >
-          
           <DialogContent>
-            <AddressForm onClose={this.handleClose} />
+            <SpecialistsForm onClose={this.handleClose} patient={this.state.currentPatient} />
           </DialogContent>
         </Dialog>
       </div>
@@ -43,4 +40,4 @@ class AddressDialog extends React.Component {
   }
 }
 
-export default AddressDialog;
+export default Specialists;

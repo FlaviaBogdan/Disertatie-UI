@@ -5,11 +5,11 @@ import {
   Switch,
 } from 'react-router-dom';
 
-import Patients from './Pages/Patients';
+import Patients from './AccesLvl-1/Patients/Patients';
 import Login from './Login/Login';
 import NavBar from './NavBar/NavBar';
-import Profile from './Pages/Profile';
-import Calendar from './Calendar/Calendar2';
+import Profile from './AccesLvl-1/Profile/Profile';
+import Calendar from './AccesLvl-1/Calendar/Calendar';
 
 const RoutingConfig = () => (
   <Router>
@@ -20,6 +20,7 @@ const RoutingConfig = () => (
     <Route path="/patients" component={Patients} />
     <Route path="/profile" component={Profile} />
     <Route path="/calendar" component={Calendar} />
+
   </Router>
 );
 
