@@ -463,7 +463,7 @@ class RegisterForm extends React.Component {
 
             }
             modifyIllness(patientDetails).then(res => {
-                if (res === 204) {
+                if (res.status === 204) {
                     getNursesNames().then(nurses => {
                         this.setState({
                             nursesNames: nurses
@@ -478,7 +478,7 @@ class RegisterForm extends React.Component {
                     this.setState({
                         activeStep: nextStep
                     })
-                } else if (res === 400) {
+                } else if (res.status === 400) {
                     alert("Not found");
                 } else {
                     alert("An error ocurred");
@@ -544,7 +544,7 @@ class RegisterForm extends React.Component {
                 "patientDetailsID": this.state.patientDetailsID
             }
             addNotes(dataToSend).then(res => {
-                if (res === 204) {
+                if (res.status === 204) {
                     this.props.onClose()
                 } else if (res === 400) {
                     alert("Not found");

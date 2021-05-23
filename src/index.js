@@ -4,6 +4,7 @@ import './index.css';
 import DarkTheme from "./Theme/DarkTheme"
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import App from './App';
+import registerServiceWorker from './serviceWorker';
 
 
 ReactDOM.render(
@@ -18,3 +19,4 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
+// registerServiceWorker.register()

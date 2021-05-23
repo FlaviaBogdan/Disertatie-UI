@@ -8,7 +8,9 @@ import { Typography } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import jwt_decode from 'jwt-decode';
+import { getTodayRegister} from '../utils/UserFunctions'
 import { withRouter } from 'react-router-dom';
+
 
 const styles = theme => ({
   root: {
@@ -35,7 +37,8 @@ class NavBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentUser: {}
+      currentUser: {},
+      vitalSigns: false,
     };
     this.navigate = this.navigate.bind(this);
   }
@@ -50,7 +53,27 @@ class NavBar extends React.Component {
         break;
       case 'Calendar':
         this.props.history.push(`/calendar`)
-        break;    
+        break;
+      case 'Symptoms':
+        this.props.history.push(`/symptomsUser`)
+        break;
+      case 'Meds':
+        this.props.history.push(`/treatmentUser`)
+        break;
+      case 'MedicalStaff':
+        this.props.history.push(`/medicalStaff`)
+        break;
+      case 'Questionnaire':
+        this.props.history.push(`/questionnaire`)
+        break;
+      
+        
+      case 'ProfileUser':
+        this.props.history.push(`/profileUser`)
+        break;
+      case 'CalendarUser':
+        this.props.history.push(`/calendarUser`)
+        break;
       default:
         this.props.history.push(`/`)
         break;
@@ -70,6 +93,8 @@ class NavBar extends React.Component {
         alert(err);
       }
     }
+
+
   }
 
   logOut(e) {
@@ -93,7 +118,7 @@ class NavBar extends React.Component {
                   Patients Monitoring
           </Typography>
                 <div className={classes.grow} />
-            
+                {this.state.currentUser.lvlAccess === 1 || this.state.currentUser.lvlAccess === 2 ?
                   <div className={classes.buttons}>
                     <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Patients")} disabled={this.props.authentificatedUser}>
                       Patients
@@ -106,7 +131,37 @@ class NavBar extends React.Component {
                     </Button>
                     <Button size="large" className={classes.margin} color="inherit" onClick={this.logOut.bind(this)} >Sign Out</Button>
                   </div>
+                  :
+                  this.state.currentUser.lvlAccess === 3 ?
+                    <div className={classes.buttons}>
+                  
+                        <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Symptoms")}>
+                          Vital Signs
+                          
+                      </Button>
+                        <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Questionnaire")}>
+                        Questionnaire
+                         
+                      </Button>
                 
+                     
+                      <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("CalendarUser")}>
+                        Calendar
+                    </Button>
+                      <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("ProfileUser")}>
+                        Profile
+                    </Button>
+                      <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Meds")}>
+                        Treatment
+                    </Button>
+                      <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("MedicalStaff")}>
+                        Medical Staff
+                    </Button>
+                      <Button size="large" className={classes.margin} color="inherit" onClick={this.logOut.bind(this)} >Sign Out</Button>
+                    </div>
+                    :
+                    null
+                }
 
 
 
