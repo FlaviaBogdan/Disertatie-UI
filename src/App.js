@@ -3,6 +3,7 @@ import React from 'react';
 import './App.css';
 import * as PusherPushNotifications from "@pusher/push-notifications-web";
 
+
 const beamsClient = new PusherPushNotifications.Client({
   instanceId: "c670f437-a379-4025-ba82-b5022c498a8b",
 });
@@ -23,6 +24,7 @@ class App extends React.Component {
     return (
       <div>
         <RoutingConfig />
+ 
       </div>
     );
   }

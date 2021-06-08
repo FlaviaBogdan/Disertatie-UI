@@ -1,9 +1,9 @@
 import React from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
-import RegisterForm from './RegisterUserForm';
+import RegisterForm from './NewTreatmentForm';
 
-class RegisterDialog extends React.Component {
+class NewTreatmentDialog extends React.Component {
   state = {
     open: false,
   };
@@ -32,7 +32,7 @@ class RegisterDialog extends React.Component {
           aria-describedby="Register can be modified"
         >
           <DialogContent>
-            <RegisterForm onClose={this.handleClose} treatmentID={this.props.treatmentID} patientDetailsID={this.props.patientDetailsID} />
+            <RegisterForm onClose={this.handleClose} treatmentID={this.props.treatmentID} getTreatment={this.props.getTreatment} patientDetailsID={this.props.patientDetailsID} />
           </DialogContent>
         </Dialog>
       </div>
@@ -40,4 +40,4 @@ class RegisterDialog extends React.Component {
   }
 }
 
-export default RegisterDialog;
+export default NewTreatmentDialog;

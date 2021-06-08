@@ -6,11 +6,8 @@ import { withRouter } from 'react-router-dom'
 import Grid from '@material-ui/core/Grid';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
-import { DataGrid } from '@material-ui/data-grid';
-import jwt_decode from 'jwt-decode';
-import { getDoctorsDetails, getPatientDoctorList, addNote } from '../../../utils/UserFunctions'
+import { addNote , getUserName} from '../../../utils/UserFunctions'
 
 
 
@@ -61,7 +58,7 @@ const ValidationTextField = withStyles({
     },
 })(TextField);
 
-class SpecialistsForm extends React.Component {
+class AddNoteForm extends React.Component {
     state = {
         currentTreatmentID: "",
         note: "",
@@ -70,7 +67,6 @@ class SpecialistsForm extends React.Component {
     }
     constructor(props) {
         super(props);
-        console.log("FORM")
         this.state.currentTreatmentID = this.props.treatmentID
         this.state.currentUser = this.props.currentUser
     }
@@ -81,15 +77,12 @@ class SpecialistsForm extends React.Component {
         this.setState({
             ...userToLogin
         })
-        console.log(this.state.note, " NOTESSS")
     }
-
-
 
     closeDialog = () => {
         let today = new Date();
         const note = {
-            content : this.state.note,
+            content: this.state.note,
             createdBy: this.state.currentUser,
             createdOn: today,
         }
@@ -98,14 +91,28 @@ class SpecialistsForm extends React.Component {
             treatmentID: this.state.currentTreatmentID
         }
         addNote(details).then((res) => {
-            if(res == 204){
-                this.props.onClose()
+            console.log("RESULT NOTE ", res)
+            if (res.status === 204) {
+                let obj = JSON.parse(res.config.data);
+                let note = obj.note;
+                let creationDate = new Date(note.createdOn);
+                var dd = String(creationDate.getDate()).padStart(2, '0');
+                var mm = String(creationDate.getMonth() + 1).padStart(2, '0'); //January is 0!
+                var yyyy = creationDate.getFullYear();
+                var hh = String(creationDate.getHours());
+                var min = String(creationDate.getMinutes());
+                note.dateTimeFormatted = dd + '.' + mm + '.' + yyyy + " " + hh + ":" + min + " - ";
+
+                getUserName(note.createdBy).then((res) => {
+                    note.createdByName = res;
+                    this.props.onClose(note)
+                })
+            
             }
-            else{
+            else {
                 alert("ERROR!")
             }
         })
-      
     }
 
     render() {
@@ -126,14 +133,6 @@ class SpecialistsForm extends React.Component {
                         container
                         spacing={1}
                     >
-                        {/* <Grid item xs={12}>
-                            <Typography style={{ textAlign: 'left' }} component="subtitle2" variant="subtitle2">
-                                Add a note and click on submit
-                            </Typography>
-                            <div style={{ height: '5px' }} />
-                        </Grid> */}
-
-                
                         <Grid item xs={12}>
                             <ValidationTextField
                                 InputProps={{
@@ -155,7 +154,6 @@ class SpecialistsForm extends React.Component {
                             <div style={{ height: '20px' }} />
                         </Grid>
                     </Grid>
-
                     <Button
                         fullWidth
                         type="submit"
@@ -164,16 +162,15 @@ class SpecialistsForm extends React.Component {
                         onClick={this.closeDialog}
                     >
                         Submit
-                        </Button>
+                    </Button>
                 </div>
-
             </main>
         );
     }
 }
 
-SpecialistsForm.propTypes = {
+AddNoteForm.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-export default withRouter(withStyles(styles)(SpecialistsForm));
+export default withRouter(withStyles(styles)(AddNoteForm));

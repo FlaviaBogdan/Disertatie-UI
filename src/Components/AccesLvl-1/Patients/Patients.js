@@ -18,27 +18,25 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
-import DialogIllness from './PatientsDialogs/ChangeIllness'
+import DialogIllness from './PatientDetailsDialogs/ChangeIllness'
+import GhqTotal from './Graf/GhqTotal';
 import './Patients.css'
 import Collapse from '@material-ui/core/Collapse';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import DialogSpecialist from './PatientsDialogs/Specialists'
 import DialogAddress from './PatientsDialogs/RegisterUser'
-import DialogNote from './PatientsDialogs/AddNoteDialog'
-import { getPatientsForUser, removeDoctorForPatient, getPatientsWithSameIllness,addNotes, getGHQbyPatient, getPatientByUserID, getVSForUser, getUserProfile, getCurrentTreatmentForUser, getUserDetails, getUserName, getDrugByID } from '../../utils/UserFunctions'
+import DialogNote from './PatientDetailsDialogs/AddNoteDialog'
+import { getPatientsForUser, removeDoctorForPatient, getPatientsWithSameIllness, addNotes, getGHQbyPatient, getPatientByUserID, getVSForUser, getUserProfile, getCurrentTreatmentForUser, getUserDetails, getUserName, getDrugByID } from '../../utils/UserFunctions'
 import jwt_decode from 'jwt-decode'
 import withStyles from '@material-ui/core/styles/withStyles';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import Brightness1Icon from '@material-ui/icons/Brightness1';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
-import PersonIcon from '@material-ui/icons/Person';
-import RegisterTreatmentDialog from './RegisterUser'
-import NoteList from './NotesList';
+import RegisterTreatmentDialog from './PatientDetailsDialogs/NewTreatment'
 import CardMedia from '@material-ui/core/CardMedia';
 import Avatar from '@material-ui/core/Avatar';
-import HomeIcon from '@material-ui/icons/Home';
 import ContactPhoneIcon from '@material-ui/icons/ContactPhone';
 import CardHeader from '@material-ui/core/CardHeader';
 import Paper from '@material-ui/core/Paper';
@@ -48,10 +46,21 @@ import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import Button from '@material-ui/core/Button';
 import Ghq from './Graf/Ghq';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
-import VitalSignsGrid from './Graf/vitalSigns'
+import VitalSignsGrid from './Graf/AllVitalSigns'
 import questions from '../../Questionaire/questions.json';
 import SimilarPatients from './Similars/SimilarPatients'
-import Temperature from './Graf/Temperature'
+import Temperature from './Graf/DinamicVitalSigns'
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+import VitalSignsComparation from './Graf/VitalSignsComparation';
+
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
+const vertical = 'top';
+const horizontal = 'right';
 
 const columns = [
   { id: 'newImage', label: 'Img', minWidth: 100 },
@@ -83,18 +92,11 @@ const styles = theme => ({
     position: 'absolute',
     overflowY: false
   },
-  // paper: {
-  //     height: 300,
-  //     width: 550,
-
-  // },
-
   root6: {
     minWidth: 480,
     maxWidth: 480,
     maxHeight: 500
   },
-
   root5: {
     width: 400,
     height: 300,
@@ -115,7 +117,6 @@ const styles = theme => ({
   inline: {
     display: 'inline',
   },
-
   rootDetails: {
     '& > *': {
       borderBottom: 'unset',
@@ -129,7 +130,6 @@ const styles = theme => ({
     minHeight: 630,
     maxHeight: 630,
   },
-
   paperDetails: {
     marginTop: '20px',
     display: 'flex',
@@ -138,7 +138,6 @@ const styles = theme => ({
     padding: `2px 3px 3px`,
     overflowX: 'auto',
   },
-
   rootDetailsList: {
     '& > *': {
       borderBottom: 'unset',
@@ -152,7 +151,6 @@ const styles = theme => ({
     minHeight: 630,
     maxHeight: 630,
   },
-
   root: {
     '& > *': {
       borderBottom: 'unset',
@@ -165,7 +163,6 @@ const styles = theme => ({
     minHeight: 630,
     maxHeight: 630,
   },
-
   avatar: {
     backgroundColor: "#0277bd",
   },
@@ -175,8 +172,7 @@ const styles = theme => ({
 class Row extends React.Component {
   constructor(props) {
     super(props)
-    console.log("ROW CONSTR ", this.props.row.newImage)
-    // super(props);
+
     this.state = {
       open: false,
       open2: false,
@@ -187,12 +183,9 @@ class Row extends React.Component {
     this.setOpen = this.setOpen.bind(this);
   }
 
-
   openForm(dialogName) {
     this.setState({ specialistDialog: true });
   }
-
-
 
   async callbackFromDialog(dialogName) {
     this.setState({ [dialogName]: false });
@@ -308,6 +301,7 @@ class Row extends React.Component {
     );
   }
 }
+
 const ValidationTextField = withStyles({
   root: {
     "& .MuiFormLabel-root": {
@@ -327,9 +321,9 @@ const ValidationTextField = withStyles({
     },
   },
 })(TextField);
+
 class PatientsTable extends React.Component {
   constructor(props) {
-
     super(props);
     this.state = {
       page: 0,
@@ -369,7 +363,10 @@ class PatientsTable extends React.Component {
       currentQuestionnaire: {},
       questionnaireHistory: [],
       dataLoaded: false,
-      similarPatients: []
+      similarPatients: [],
+      openNotification: false,
+      messageNotification: "",
+      typeNotification: "",
 
 
     };
@@ -391,18 +388,39 @@ class PatientsTable extends React.Component {
     this.setState({
       registerTreatment: true
     })
+ 
+  }
 
+
+  handleCloseNotification = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    this.setState({
+      openNotification: false
+    })
+
+  };
+
+  async callbackFromDialogNote(dialogName, note) {
+    this.setState({ [dialogName]: false });
+    var someProperty = { ...this.state.clickedPatient }
+    someProperty.notes.unshift(note);
+    this.setState({
+      currentTreatment: someProperty
+    })
   }
 
   callbackFromDialogIlness(dialogName, illness) {
     this.setState({ [dialogName]: false });
-    console.log(illness, ",  illness", this.state.clickedPatient)
     let illnessString = ""
-    illness.forEach(function (obj) {
-      illnessString = illnessString + obj + "; "
+    illness.forEach(function (objIllness) {
+      illnessString = illnessString + objIllness + "; "
     })
+    var someProperty = { ...this.state.clickedPatient }
+    someProperty.severity = illnessString
     this.setState({
-      severity: illnessString
+      clickedPatient: someProperty
     })
     this.forceUpdate()
   }
@@ -411,39 +429,36 @@ class PatientsTable extends React.Component {
   addPatientNote() {
     let that = this;
     let today = new Date();
+
     const note = {
       content: this.state.patientNote,
       createdBy: this.state.currentUser,
       createdOn: today,
     }
+
     const details = {
       note: note,
       patientDetailsID: this.state.clickedPatient._id
     }
-    addNotes(details).then((res) => {
 
+    addNotes(details).then((res) => {
       let patient = this.state.clickedPatient;
       if (res.status === 204) {
         let obj = JSON.parse(res.config.data);
-        let test = new Date(obj.note.createdOn);
-
-        var dd = String(test.getDate()).padStart(2, '0');
-        var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-        var yyyy = test.getFullYear();
-        var hh = String(test.getHours());
-        var min = String(test.getMinutes());
+        let createOnDate = new Date(obj.note.createdOn);
+        var dd = String(createOnDate.getDate()).padStart(2, '0');
+        var mm = String(createOnDate.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = createOnDate.getFullYear();
+        var hh = String(createOnDate.getHours());
+        var min = String(createOnDate.getMinutes());
         obj.note.dateTimeFormatted = dd + '.' + mm + '.' + yyyy + " " + hh + ":" + min + " - ";
-        getUserName(obj.note.createdBy).then((res) => {
-          console.log(" obj.createdByName", res)
-          obj.note.createdByName = res;
+        getUserName(obj.note.createdBy).then((name) => {
+          obj.note.createdByName = name;
           patient.notes.unshift(obj.note)
           that.setState({
             clickedPatient: patient
           })
         })
-
-        console.log("TESTTTTTTTTTTTTTTTT", patient)
-
       }
       else {
         alert("FAIL!")
@@ -460,33 +475,29 @@ class PatientsTable extends React.Component {
 
   }
 
-
   openPatientDetails(indicator) {
     this.setState({
       openPatientDetails: indicator
     })
   }
+
   openFormNote() {
-    console.log("addNoteDialog", this.state.addNoteDialog)
     this.setState({ addNoteDialog: true });
   }
 
   openFormIllness() {
-    console.log("addIllnessDialog", this.state.addIllnessDialog)
     this.setState({ addIllnessDialog: true });
   }
 
   handleChange = (event, newValue) => {
-    if(newValue ===2){
+    if (newValue === 2) {
       let severity = this.state.clickedPatient.illness;
       let id = this.state.clickedPatient.userID;
-      console.log("PAT SEVERITY ", severity
-      )
       let similarPatients = [];
-      severity.forEach(function(obj){
-        getPatientsWithSameIllness(obj, id ).then((res)=>{
-          res.forEach(function(obj2){
-            similarPatients.push(obj2);
+      severity.forEach(function (severity) {
+        getPatientsWithSameIllness(severity, id).then((patients) => {
+          patients.forEach(function (patient) {
+            similarPatients.push(patient);
           })
         })
       })
@@ -494,30 +505,28 @@ class PatientsTable extends React.Component {
         similarPatients: similarPatients,
       })
     }
+
     if (newValue === 4) {
       getGHQbyPatient(this.state.clickedPatient.userID).then((res) => {
-
-        res.data.forEach(function (obj) {
-          let dateCurrent = new Date(obj.creationDate);
+        res.data.forEach(function (questionnaire) {
+          let dateCurrent = new Date(questionnaire.creationDate);
           var dd = String(dateCurrent.getDate()).padStart(2, '0');
           var mm = String(dateCurrent.getMonth() + 1).padStart(2, '0'); //January is 0!
           var yyyy = dateCurrent.getFullYear();
-
           let creationDate = dd + '/' + mm + '/' + yyyy;
-          obj.currentDate = creationDate;
+          questionnaire.currentDate = creationDate;
         })
-        let test = this.state.questions;
-        test.forEach(function (obj) {
+        let questions = this.state.questions;
+        questions.forEach(function (obj) {
           obj.answer = res.data[0].answers[obj.id];
         })
         let dateCurrent = new Date(res.data[0].creationDate);
         var dd = String(dateCurrent.getDate()).padStart(2, '0');
         var mm = String(dateCurrent.getMonth() + 1).padStart(2, '0'); //January is 0!
         var yyyy = dateCurrent.getFullYear();
-
         let creationDate = dd + '/' + mm + '/' + yyyy;
         let currentQuest = {
-          qAndA: test,
+          qAndA: questions,
           scores: res.data[0].scores,
           createdBy: res.data[0].patientID,
           creationDate: creationDate
@@ -530,13 +539,12 @@ class PatientsTable extends React.Component {
       })
 
     }
-    if (newValue === 4) {
-      console.log("currentQuestionnaire", this.state.currentQuestionnaire)
-    }
+
     this.setState({
       value: newValue
     });
   };
+
   handleChangeHealth = (event, newValue) => {
     this.setState({
       valueHealth: newValue
@@ -549,12 +557,12 @@ class PatientsTable extends React.Component {
     });
   };
 
-
   handleChangeSubValue = (event, newValue) => {
     this.setState({
       subValue: newValue
     });
   };
+
   unassign(patID) {
     const details = {
       patientDetailsID: patID,
@@ -564,9 +572,15 @@ class PatientsTable extends React.Component {
 
     removeDoctorForPatient(details).then(res => {
       if (res.status === 204) {
-        alert("You were succesfully unassigned for patient " + patID);
+
+        this.setState({
+          messageNotification: "You were successfully unassigned!",
+          typeNotification: 'success',
+          openNotification: true
+        })
+
         getPatientsForUser(this.state.currentUser, this.state.lvlAccess).then(patients => {
-          let a = []
+          let patientsData = []
           for (let i = 0; i < patients.length; i++) {
             let diseaseArray = patients[i].illness;
             let disease = "";
@@ -581,23 +595,20 @@ class PatientsTable extends React.Component {
               }
             }
 
-            let test = new Date(patients[i].dateOfBirth);
-            var dd = String(test.getDate()).padStart(2, '0');
-            var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-            var yyyy = test.getFullYear();
-
+            let dateOfBirth = new Date(patients[i].dateOfBirth);
+            var dd = String(dateOfBirth.getDate()).padStart(2, '0');
+            var mm = String(dateOfBirth.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = dateOfBirth.getFullYear();
             let birthday = dd + '/' + mm + '/' + yyyy;
-            let image = patients[i].image;
-            let newImg = [image]
 
-            console.log("IMG ", patients[i])
-            a.push(createData(patients[i].illness, patients[i].notes, [i].userID, image, patients[i].firstName, patients[i].lastName, birthday, patients[i].gender, patients[i].phone, disease, patients[i].gravityCode, patients[i].address, patients[i]._id))
+            let image = patients[i].image;
+         
+            patientsData.push(createData(patients[i].illness, patients[i].notes, [i].userID, image, patients[i].firstName, patients[i].lastName, birthday, patients[i].gender, patients[i].phone, disease, patients[i].gravityCode, patients[i].address, patients[i]._id))
           }
 
           this.setState({
-            rows: a
+            rows: patientsData
           })
-
         })
       }
       else if (res === 400) {
@@ -617,23 +628,55 @@ class PatientsTable extends React.Component {
     this.setState({ [dialogName]: true });
   }
 
+
+
   async callbackFromDialog(dialogName) {
     this.setState({ [dialogName]: false });
     this.forceUpdate()
   }
 
-  setLoading = (test) => {
+  async getTreatment(){
+    getPatientByUserID(this.state.clickedPatient.userID).then((user)=>{
 
+ 
+      let diseaseArray = user.illness;
+        let disease = "";
+        for (let j = 0; j < diseaseArray.length; j++) {
+          if (j === 0 && j !== diseaseArray.length - 1) {
+            disease = diseaseArray[j] + "; ";
+          }
+          else if (j !== diseaseArray.length - 1) {
+            disease = disease + diseaseArray[j] + "; ";
+          } else {
+            disease = disease + diseaseArray[j];
+          }
+        }
+    
+      user.disease = disease;
+      let dateOfBirth = new Date(user.dateOfBirth);
 
+        var dd = String(dateOfBirth.getDate()).padStart(2, '0');
+        var mm = String(dateOfBirth.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = dateOfBirth.getFullYear();
+        user.birthday = dd + '/' + mm + '/' + yyyy;
 
+        // user.image = patients[i].image;
+
+        //a.push(createData(patients[i].illness, patients[i].notes, patients[i].treatmentHistory, patients[i].userID, image, patients[i].firstName, patients[i].lastName, birthday, patients[i].gender, patients[i].phone, disease, patients[i].gravityCode, patients[i].address, patients[i]._id))
+        this.setLoading(user);
+    })
+    
+  }
+
+  setLoading = (patient) => {
     let vitalSigns = []
-    getVSForUser(test.userID).then((res) => {
-      res.data.forEach(function (obj) {
-        let test = new Date(obj.date);
-        var dd = String(test.getDate()).padStart(2, '0');
-        var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-        var yyyy = test.getFullYear();
 
+    getVSForUser(patient.userID).then((res) => {
+      res.data.forEach(function (obj) {
+        let resDate = new Date(obj.date);
+        var dd = String(resDate.getDate()).padStart(2, '0');
+        var mm = String(resDate.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = resDate.getFullYear();
         let creationDate = dd + '/' + mm + '/' + yyyy;
         obj.creationDate = creationDate
         vitalSigns.push(obj)
@@ -641,73 +684,72 @@ class PatientsTable extends React.Component {
       this.setState({
         vitalSigns: vitalSigns
       })
-    }
-    )
+    })
 
-    test.notes.forEach(function (obj) {
-      console.log(" obj", obj)
-      let test = new Date(obj.createdOn);
-
-      var dd = String(test.getDate()).padStart(2, '0');
-      var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-      var yyyy = test.getFullYear();
-      var hh = String(test.getHours());
-      var min = String(test.getMinutes());
+    patient.notes.forEach(function (obj) {
+      let creationDate = new Date(obj.createdOn);
+      var dd = String(creationDate.getDate()).padStart(2, '0');
+      var mm = String(creationDate.getMonth() + 1).padStart(2, '0'); //January is 0!
+      var yyyy = creationDate.getFullYear();
+      var hh = String(creationDate.getHours());
+      var min = String(creationDate.getMinutes());
       obj.dateTimeFormatted = dd + '.' + mm + '.' + yyyy + " " + hh + ":" + min + " - ";
-      getUserName(obj.createdBy).then((res) => {
-        console.log(" obj.createdByName", res)
-        obj.createdByName = res;
 
+      getUserName(obj.createdBy).then((res) => {
+        obj.createdByName = res;
       })
     })
-    test.notes.reverse();
-    getPatientByUserID(test.userID).then((res) => {
 
+    patient.notes.reverse();
+
+    getPatientByUserID(patient.userID).then((res) => {
       let doctors = res.doctors;
       let nurses = res.nurses
       const doctorLen = doctors.length;
       const nursesLen = nurses.length;
-      console.log(res, " test USER ID222")
-
       for (let i = 0; i < doctorLen; i++) {
         getUserProfile(doctors[i]).then((doctor) => {
           let staff = this.state.medicalStaffArr;
           doctor.name = doctor.firstName + " " + doctor.lastName;
           delete doctor.firstName;
           delete doctor.firstName;
-          let test = new Date(doctor.dateOfBirth);
 
-          var dd = String(test.getDate()).padStart(2, '0');
-          var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-          var yyyy = test.getFullYear();
+          let doctorBirthday = new Date(doctor.dateOfBirth);
+          var dd = String(doctorBirthday.getDate()).padStart(2, '0');
+          var mm = String(doctorBirthday.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = doctorBirthday.getFullYear();
           doctor.birthday = dd + '/' + mm + '/' + yyyy;
+
           staff.push(doctor)
+
           this.setState({
             medicalStaffArr: staff,
 
           })
         })
       }
+
       for (let i = 0; i < nursesLen; i++) {
         getUserProfile(nurses[i]).then((nurse) => {
           let staff = this.state.medicalStaffArr;
           nurse.name = nurse.firstName + " " + nurse.lastName;
           delete nurse.firstName;
           delete nurse.firstName;
-          let test = new Date(nurse.dateOfBirth);
+          let nurseBirthday = new Date(nurse.dateOfBirth);
 
-          var dd = String(test.getDate()).padStart(2, '0');
-          var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-          var yyyy = test.getFullYear();
+          var dd = String(nurseBirthday.getDate()).padStart(2, '0');
+          var mm = String(nurseBirthday.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = nurseBirthday.getFullYear();
           nurse.birthday = dd + '/' + mm + '/' + yyyy;
+
           staff.push(nurse)
+
           this.setState({
             medicalStaffArr: staff,
 
           })
-          console.log("MB " + nursesLen + "  " + i)
-          if (i === nursesLen - 1) {
 
+          if (i === nursesLen - 1) {
             this.setState({
               loadingDetails: false,
 
@@ -715,51 +757,46 @@ class PatientsTable extends React.Component {
           }
         })
       }
-      console.log(this.state.medicalStaffArr, " TET")
       this.setState({
         loading: !this.state.loading,
-        clickedPatient: test
+        clickedPatient: patient
       })
-
-
     })
-    console.log("test.treatmentHistory", test.treatmentHistory)
+
     let that = this;
-    test.treatmentHistory.forEach(function (obj) {
+
+    patient.treatmentHistory.forEach(function (obj) {
       getCurrentTreatmentForUser(obj).then((res) => {
         let treatmentHistory = [];
         if (res.data.current === true) {
           res.data.notes.forEach(function (obj) {
-            console.log(" obj", obj)
-            let test = new Date(obj.createdOn);
 
-            var dd = String(test.getDate()).padStart(2, '0');
-            var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-            var yyyy = test.getFullYear();
-            var hh = String(test.getHours());
-            var min = String(test.getMinutes());
+            let creationDate = new Date(obj.createdOn);
+            var dd = String(creationDate.getDate()).padStart(2, '0');
+            var mm = String(creationDate.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = creationDate.getFullYear();
+            var hh = String(creationDate.getHours());
+            var min = String(creationDate.getMinutes());
+
             obj.dateTimeFormatted = dd + '.' + mm + '.' + yyyy + " " + hh + ":" + min + " - ";
+
             getUserName(obj.createdBy).then((res) => {
-              console.log(" obj.createdByName", res)
               obj.createdByName = res;
 
             })
           })
+
           res.data.notes.reverse();
-          let user = "";
+
           getUserDetails(res.data.doctorID).then((res2) => {
             getUserName(res.data.createdBy).then((res3) => {
               res.data.doctorDetails = res2;
-              console.log("res3 ", res3)
               that.setState({
                 docDetails: res2,
                 createdByUser: res3,
               })
-
             })
-
           })
-
 
           res.data.drugs.forEach(function (obj) {
             getDrugByID(obj.medID).then((res) => {
@@ -769,25 +806,22 @@ class PatientsTable extends React.Component {
                 obj.DCI = res.data.DCI;
                 obj.Concentration = res.data.Concentration;
               }
-
             })
-
           })
 
           that.setState({
             currentTreatment: res.data,
             currentDrugs: res.data.drugs,
           })
-
         }
         else {
           if (res.status === 200) {
             if (res.data.doctorID && res.data.createdBy) {
               getUserDetails(res.data.doctorID).then((res2) => {
                 getUserName(res.data.createdBy).then((res3) => {
-
                   res.data.doctorDetails = res2;
                   res.data.createdByName = res3;
+
                   res.data.drugs.forEach(function (obj) {
                     getDrugByID(obj.medID).then((res4) => {
                       if (res.status === 200) {
@@ -796,22 +830,19 @@ class PatientsTable extends React.Component {
                       }
                     })
                   })
+
                   treatmentHistory.push(res.data)
-                  treatmentHistory.push(res.data)
-                  treatmentHistory.push(res.data)
+         
                   that.setState({
                     treatmentHistory: treatmentHistory
                   })
                 })
-
               })
             }
             else if (res.data.doctorID) {
               getUserDetails(res.data.doctorID).then((res2) => {
-
                 res.data.doctorDetails = res2;
                 treatmentHistory.push(res.data)
-                console.log("FDSFS", res.data);
                 that.setState({
                   treatmentHistory: treatmentHistory
                 })
@@ -826,15 +857,9 @@ class PatientsTable extends React.Component {
                 })
               })
             }
-
-
-
           }
         }
-
-
       })
-
     })
   };
 
@@ -883,14 +908,12 @@ class PatientsTable extends React.Component {
   };
 
   handleChangeRowsPerPageVS = (event) => {
-    if (event.target.value === 4) {
-      console.log("state 4", this.state.currentQuestionnaire)
-    }
     this.setState({
       rowsPerPageVS: +event.target.value,
       pageVS: 0
     })
   };
+
   handleChangePageMeds = (event, newPage) => {
     this.setState({
       pageMeds: newPage
@@ -909,12 +932,9 @@ class PatientsTable extends React.Component {
     if (token) {
       try {
         const decoded = jwt_decode(token)
-        console.log("decoded", decoded._id)
         let id = decoded._id;
         let accessLvl = decoded.lvlAccess;
-        console.log("lvl acc", accessLvl)
         const patients = await getPatientsForUser(id, accessLvl);
-        console.log("Patients", patients)
         let a = []
         for (let i = 0; i < patients.length; i++) {
           let diseaseArray = patients[i].illness;
@@ -928,20 +948,17 @@ class PatientsTable extends React.Component {
             } else {
               disease = disease + diseaseArray[j];
             }
-
           }
 
-          let test = new Date(patients[i].dateOfBirth);
+          let dateOfBirth = new Date(patients[i].dateOfBirth);
 
-          var dd = String(test.getDate()).padStart(2, '0');
-          var mm = String(test.getMonth() + 1).padStart(2, '0'); //January is 0!
-          var yyyy = test.getFullYear();
+          var dd = String(dateOfBirth.getDate()).padStart(2, '0');
+          var mm = String(dateOfBirth.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = dateOfBirth.getFullYear();
           let birthday = dd + '/' + mm + '/' + yyyy;
 
           let image = patients[i].image;
-          let newImg = [image]
-
-          console.log("IMG ", newImg)
+  
           a.push(createData(patients[i].illness, patients[i].notes, patients[i].treatmentHistory, patients[i].userID, image, patients[i].firstName, patients[i].lastName, birthday, patients[i].gender, patients[i].phone, disease, patients[i].gravityCode, patients[i].address, patients[i]._id))
         }
         this.setState({
@@ -958,9 +975,6 @@ class PatientsTable extends React.Component {
     else {
       alert("USER NOT LOGGED IN")
     }
-  }
-  getStripedStyle(index) {
-    return { background: index % 2 ? '#fafafa' : '#F5F5F5' };
   }
 
   render() {
@@ -1048,7 +1062,7 @@ class PatientsTable extends React.Component {
                                   <Grid item xs={12}>
                                     <Typography variant="subtitle1" gutterBottom color="textSecondary">
                                       General Data
-                      </Typography>
+                                    </Typography>
                                     <Typography variant="subtitle2" gutterBottom color="textSecondary">
                                       First Name:  {this.state.clickedPatient.firstName}
                                     </Typography>
@@ -1074,7 +1088,7 @@ class PatientsTable extends React.Component {
                                   <Grid item xs={12}>
                                     <Typography variant="subtitle1" gutterBottom color="textSecondary">
                                       Address
-                      </Typography>
+                                    </Typography>
                                     <Typography variant="subtitle2" gutterBottom color="textSecondary">
                                       Country:  {this.state.clickedPatient.address[0].country}
                                     </Typography>
@@ -1092,17 +1106,15 @@ class PatientsTable extends React.Component {
                                     </Typography>
                                   </Grid>
                                   <Grid item xs={12}>
-
                                     <Typography variant="subtitle1" gutterBottom color="textSecondary">
                                       Communication
-                      </Typography>
+                                    </Typography>
                                     <Typography variant="subtitle2" gutterBottom color="textSecondary">
                                       Phone:  {this.state.clickedPatient.phone}
                                     </Typography>
                                     <Typography variant="subtitle2" gutterBottom color="textSecondary">
                                       email:  {this.state.clickedPatient.phone}
                                     </Typography>
-
                                   </Grid>
                                 </Grid>
                               </div>
@@ -1112,24 +1124,18 @@ class PatientsTable extends React.Component {
                       </Card>
                     </Grid>
                     <Grid item xs>
-
-
-
                       <Card className={classes.rootDetailsList} >
                         <div id="container1">
                           <div id="container2">
                             <CardContent className={classes.paper}>
                               <Grid container direction="row" spacing={2}>
-
                                 <Grid item xs={12} style={{ backgroundColor: '#FFF' }}>
                                   <div style={{
                                     display: "flex",
                                     backgroundColor: '#FFF',
                                     justifyContent: "center",
                                     alignItems: "center",
-
                                   }}>
-                                    {/* <div style={{ position:'absolute', marginTop:'20px'}}> */}
                                     <center>
                                       <Tabs
                                         value={this.state.value}
@@ -1147,17 +1153,12 @@ class PatientsTable extends React.Component {
                                         <Tab label="Notes" />
                                       </Tabs>
                                     </center>
-                                    {/* </div> */}
                                   </div>
                                 </Grid>
-
                                 <Grid item xs={12} >
-
                                   {this.state.value === 0 ?
                                     <div >
-
                                       <Grid container spacing={2} style={{ maxHeight: '525px' }} >
-
                                         <Grid item xs={12} >
                                           <Grid container justify="center" spacing={2} style={{ marginTop: 10, marginBottom: 10 }}>
                                             {this.state.medicalStaffArr.map((value) => (
@@ -1180,10 +1181,7 @@ class PatientsTable extends React.Component {
                                                   />
                                                   <CardContent>
                                                     <Grid container spacing={2} direction="row">
-
                                                       <Grid item xs={6}>
-
-
                                                         <Typography variant="body2" color="textSecondary" component="p">
                                                           Gender: {value.gender}
                                                         </Typography>
@@ -1197,9 +1195,7 @@ class PatientsTable extends React.Component {
                                                           Experience: {value.experience}
                                                         </Typography>
                                                       </Grid>
-
                                                       <Grid item xs={6}>
-
                                                         <Typography variant="body2" color="textSecondary" component="p">
                                                           Country: {value.address.country}
                                                         </Typography>
@@ -1218,37 +1214,25 @@ class PatientsTable extends React.Component {
                                                       </Grid>
                                                       <Grid item xs={12}>
                                                         <Grid container spacing={1}>
-
                                                           <Grid item xs={2}>
                                                             <center>
                                                               <ContactPhoneIcon color="secondary" style={{ width: '30px', marginTop: 2, height: '30px', display: 'inline-block' }} />
                                                             </center>
-
                                                           </Grid>
                                                           <Grid item xs={10}>
-
                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                               Mobile: {value.phone},  Phone: {value.fix},  Fax: {value.fax}
                                                             </Typography>
                                                           </Grid>
                                                         </Grid>
-
-
                                                       </Grid>
-
                                                     </Grid>
-
-
-
                                                   </CardContent>
-
-
                                                 </Card>
                                               </Grid>
                                             ))}
                                           </Grid>
                                         </Grid>
-
                                       </Grid>
                                     </div>
                                     :
@@ -1260,9 +1244,7 @@ class PatientsTable extends React.Component {
                                         {this.state.treatmentHistory.map((value) => (
                                           <Grid key={value._id} item xs>
                                             <Card className={classes.root6} style={{ borderStyle: 'solid', borderColor: '#01579b', borderWidth: '2px', borderRadius: '5px' }} >
-                                              {/* style={{ borderStyle: 'solid', borderColor: '#01579b', borderWidth: '2px', borderRadius: '5px' }} */}
                                               <CardContent>
-
                                                 <Grid container spacing={3}>
                                                   <Grid item xs={12} sm={6}>
                                                     <Typography variant="subtitle1" color="textSecondary" gutterBottom>Treatment Details</Typography>
@@ -1270,7 +1252,6 @@ class PatientsTable extends React.Component {
                                                     <Typography variant="subtitle2" color="textSecondary" gutterBottom>Description: {value.description}</Typography>
                                                     <Typography variant="subtitle2" color="textSecondary" gutterBottom>Created On: {value.createdOn}</Typography>
                                                     <Typography variant="subtitle2" color="textSecondary" gutterBottom>Created By: {value.createdByName}</Typography>
-
                                                   </Grid>
                                                   <Grid item xs={12} sm={6}>
                                                     <Typography variant="subtitle1" color="textSecondary" gutterBottom>Doctor Details</Typography>
@@ -1284,7 +1265,6 @@ class PatientsTable extends React.Component {
                                                   </Grid>
                                                 </Grid>
                                                 <List  >
-
                                                   <ListItem style={{ backgroundColor: "#01579b" }}>
                                                     <Grid container spacing={3} direction="row">
                                                       <Grid item xs={4}>
@@ -1312,20 +1292,12 @@ class PatientsTable extends React.Component {
                                                         </Grid>
                                                       </Grid>
                                                     </ListItem>
-
-
-
-
                                                   ))}
                                                 </List>
-
-
-                                                {/* </Grid> */}
                                               </CardContent>
                                             </Card>
                                           </Grid>
                                         ))}
-
                                       </Grid>
                                     </div>
                                     :
@@ -1338,14 +1310,11 @@ class PatientsTable extends React.Component {
                                         backgroundColor: '#FFF',
                                         justifyContent: "center",
                                         alignItems: "center",
-
                                       }}>
-                                        {/* <div style={{ position:'absolute', marginTop:'20px'}}> */}
                                         <center>
                                           <Tabs
                                             value={this.state.subValue}
                                             indicatorColor="secondary"
-
                                             textColor="secondary"
                                             onChange={this.handleChangeSubValue}
                                             aria-label="disabled tabs example"
@@ -1353,25 +1322,21 @@ class PatientsTable extends React.Component {
                                             <Tab label="Details" />
                                             <Tab label="Similar treatments" />
                                             <Tab label="Statistics" />
-
                                           </Tabs>
                                         </center>
-                                        {/* </div> */}
                                       </div>
-                                      {this.state.addNoteDialog ? <DialogNote treatmentID={this.state.currentTreatment._id} open={this.state.addNoteDialog} currentUser={this.state.currentUser} callback={(open) => this.callbackFromDialog(open)} /> : null}
+                                      {this.state.addNoteDialog ? <DialogNote treatmentID={this.state.currentTreatment._id} open={this.state.addNoteDialog} currentUser={this.state.currentUser} callback={(open, note) => this.callbackFromDialogNote(open, note)} /> : null}
                                       {this.state.subValue === 0 ?
                                         <Grid container spacing={2} style={{ marginLeft: '15px', marginTop: '15px', maxHeight: '470px' }}>
                                           <Grid item xs={12}>
-
                                             <Typography variant="subtitle1" color="textSecondary" gutterBottom>This is the current treatment, if you want to change it
                                               <Button size="small" style={{ marginBottom: '5px' }} color="primary" onClick={() => this.openRegisterTreatment()}>
                                                 click here!
-                                     </Button>
-                                              {this.state.registerTreatment ? <RegisterTreatmentDialog treatmentID={this.state.currentTreatment._id} patientDetailsID={this.state.clickedPatient._id} open={this.state.registerTreatment} callback={(open) => this.callbackFromDialog(open)} /> : null}
+                                              </Button>
+                                              {this.state.registerTreatment ? <RegisterTreatmentDialog treatmentID={this.state.currentTreatment._id} getTreatment={() => this.getTreatment()} patientDetailsID={this.state.clickedPatient._id} open={this.state.registerTreatment} callback={(open) => this.callbackFromDialog(open)} /> : null}
                                             </Typography>
                                           </Grid>
                                           <Grid item xs={4} >
-
                                             <Typography variant="subtitle1" color="textSecondary" gutterBottom>Treatment Details</Typography>
                                             <Typography variant="subtitle2" color="textSecondary" gutterBottom>Name: {this.state.currentTreatment.name}</Typography>
                                             <Typography variant="subtitle2" color="textSecondary" gutterBottom>Description: {this.state.currentTreatment.description}</Typography>
@@ -1386,17 +1351,13 @@ class PatientsTable extends React.Component {
                                             <Typography variant="subtitle2" color="textSecondary" gutterBottom>Mobile: {this.state.docDetails.phone}</Typography>
                                             <Typography variant="subtitle2" color="textSecondary" gutterBottom>Phone: {this.state.docDetails.fix}</Typography>
                                             <Typography variant="subtitle2" color="textSecondary" gutterBottom>Fax: {this.state.docDetails.fax}</Typography>
-
                                           </Grid>
-
                                           <Grid item xs={8}>
                                             <Typography variant="subtitle1" color="textSecondary" gutterBottom>Medication Details</Typography>
                                             <TableContainer component={Paper} style={{ maxHeight: '400px', maxWidth: '700px', marginTop: '10px' }}>
                                               <Table aria-label="collapsible table">
                                                 <TableHead>
-
                                                   <TableRow style={{ backgroundColor: '#01579b', color: '#000' }}>
-
                                                     <TableCell style={{ color: '#FFF' }}>Name</TableCell>
                                                     <TableCell align="right" style={{ color: '#FFF' }}>DCI</TableCell>
                                                     <TableCell align="right" style={{ color: '#FFF' }}>Administration</TableCell>
@@ -1408,17 +1369,12 @@ class PatientsTable extends React.Component {
                                                 <TableBody>
                                                   {this.state.currentDrugs.slice(this.state.pageMeds * this.state.rowsPerPageMeds, this.state.pageMeds * this.state.rowsPerPageMeds + this.state.rowsPerPageMeds).map((row) => (
                                                     <TableRow key={row.medID}>
-
                                                       <TableCell align="left">{row.name}</TableCell>
                                                       <TableCell align="left">{row.DCI}</TableCell>
                                                       <TableCell align="left">{row.Administration}</TableCell>
                                                       <TableCell align="left">{row.Concentration}</TableCell>
                                                       <TableCell align="left">{row.frequency}</TableCell>
                                                       <TableCell align="left">{row.notes}</TableCell>
-                                                      {/* <TableCell align="left">{row.administration}</TableCell>
-                                      <TableCell align="left">{row.frequency}</TableCell>
-                                      <TableCell align="left">{row.notes}</TableCell> */}
-
                                                     </TableRow>
                                                   ))}
                                                 </TableBody>
@@ -1435,11 +1391,12 @@ class PatientsTable extends React.Component {
                                             </TableContainer>
                                           </Grid>
                                           <Grid item xs={6}>
-                                            <Typography variant="subtitle1" color="textSecondary" gutterBottom>Notes -  <Button size="small" style={{ marginBottom: '5px' }} color="primary" onClick={() => this.openFormNote()}>
-                                              Add new
-                                </Button>
+                                            <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+                                              Notes -
+                                              <Button size="small" style={{ marginBottom: '5px' }} color="primary" onClick={() => this.openFormNote()}>
+                                                Add new
+                                              </Button>
                                             </Typography>
-
                                             <List className={classes.rootList}>
                                               {this.state.currentTreatment.notes.map((note) => (
                                                 <div>
@@ -1467,24 +1424,25 @@ class PatientsTable extends React.Component {
                                                   <Divider variant="inset" component="li" />
                                                 </div>
                                               ))}
-
                                             </List>
                                           </Grid>
                                         </Grid>
                                         : null}
-                                        {this.state.subValue === 1 ? 
-                                        <SimilarPatients patientsArray={this.state.similarPatients}/>
-                                        
-                                        : null}
+                                      {this.state.subValue === 1 ?
+                                        <SimilarPatients patientsArray={this.state.similarPatients} />
+                                        :
+                                      null
+                                      }
+                                      {this.state.subValue === 2 ?
+                                        <VitalSignsComparation patientsArray={this.state.similarPatients} currentPatient={this.state.clickedPatient.userID} />
+                                        :
+                                        null}
                                     </div>
                                     :
                                     null
                                   }
                                   {this.state.value === 3 ?
-
-
                                     <div >
-
                                       <Grid container spacing={2} style={{ maxHeight: '525px' }} >
                                         <Grid item xs={12} style={{ backgroundColor: '#FFF' }}>
                                           <div style={{
@@ -1494,7 +1452,6 @@ class PatientsTable extends React.Component {
                                             alignItems: "center",
 
                                           }}>
-                                            {/* <div style={{ position:'absolute', marginTop:'20px'}}> */}
                                             <center>
                                               <Tabs
                                                 value={this.state.valueHealth}
@@ -1506,24 +1463,19 @@ class PatientsTable extends React.Component {
                                               >
                                                 <Tab label="Vital Signs" />
                                                 <Tab label="Monitor signs" />
-
-
                                               </Tabs>
                                             </center>
                                             {/* </div> */}
                                           </div>
                                         </Grid>
                                         {this.state.valueHealth === 0 ?
-
                                           <Grid item xs={12} style={{ padding: 20 }}>
                                             <Grid container spacing={2}>
                                               <Grid item xs={12}>
                                                 <TableContainer component={Paper} style={{ maxHeight: '500px', marginTop: '10px' }}>
                                                   <Table aria-label="collapsible table">
                                                     <TableHead>
-
                                                       <TableRow style={{ backgroundColor: '#01579b', color: '#000' }}>
-
                                                         <TableCell style={{ color: '#FFF' }}>Date</TableCell>
                                                         <TableCell align="right" style={{ color: '#FFF' }}>Temperature(°C)</TableCell>
                                                         <TableCell align="right" style={{ color: '#FFF' }}>Oxygen level</TableCell>
@@ -1538,20 +1490,15 @@ class PatientsTable extends React.Component {
                                                     <TableBody>
                                                       {this.state.vitalSigns.slice(this.state.pageVS * this.state.rowsPerPageVS, this.state.pageVS * this.state.rowsPerPageVS + this.state.rowsPerPageVS).map((row) => (
                                                         <TableRow key={row.medID}>
-
                                                           <TableCell align="left">{row.creationDate}</TableCell>
-                                                          <TableCell style={{ color: row.temperatureC <= 36 ? "#FFA500" : row.temperatureC > 37 ? "#FF0000" : "#000" }}align="right">{row.temperatureC}</TableCell>
-                                                          <TableCell style={{ color: row.bloodOxygenLevel <= 80? "#FFA500" : row.bloodOxygenLevel > 100 ? "#FF0000" : "#000" }} align="right">{row.bloodOxygenLevel}</TableCell>
+                                                          <TableCell style={{ color: row.temperatureC <= 36 ? "#FFA500" : row.temperatureC > 37 ? "#FF0000" : "#000" }} align="right">{row.temperatureC}</TableCell>
+                                                          <TableCell style={{ color: row.bloodOxygenLevel <= 80 ? "#FFA500" : row.bloodOxygenLevel > 100 ? "#FF0000" : "#000" }} align="right">{row.bloodOxygenLevel}</TableCell>
                                                           <TableCell style={{ color: row.heartRate <= 60 ? "#FFA500" : row.heartRate > 100 ? "#FF0000" : "#000" }} align="right">{row.heartRate}</TableCell>
                                                           <TableCell style={{ color: row.respiratoryRate <= 12 ? "#FFA500" : row.respiratoryRate > 18 ? "#FF0000" : "#000" }} align="right">{row.respiratoryRate}</TableCell>
                                                           <TableCell style={{ color: row.bloodPressure.systolic <= 110 ? "#FFA500" : row.bloodPressure.systolic > 130 ? "#FF0000" : "#000" }} align="right">{row.bloodPressure.systolic}</TableCell>
                                                           <TableCell style={{ color: row.bloodPressure.diastolic <= 70 ? "#FFA500" : row.bloodPressure.diastolic > 80 ? "#FF0000" : "#000" }} align="right">{row.bloodPressure.diastolic}</TableCell>
                                                           <TableCell align="right">{row.health.status}</TableCell>
                                                           <TableCell align="right">{row.health.symptoms}</TableCell>
-                                                          {/* <TableCell align="left">{row.administration}</TableCell>
-                                      <TableCell align="left">{row.frequency}</TableCell>
-                                      <TableCell align="left">{row.notes}</TableCell> */}
-
                                                         </TableRow>
                                                       ))}
                                                     </TableBody>
@@ -1568,38 +1515,29 @@ class PatientsTable extends React.Component {
                                                 </TableContainer>
                                               </Grid>
                                               <Grid item xs={12}>
-
                                                 <VitalSignsGrid vitalSigns={this.state.vitalSigns} />
-
                                               </Grid>
                                             </Grid>
-
                                           </Grid>
-
-
                                           :
-                                          null}
+                                          null
+                                        }
                                         {this.state.valueHealth === 1 ?
                                           <Grid item xs={12} style={{ padding: 20 }}>
                                             <Grid container spacing={2}>
                                               <Grid item xs={12}>
-
                                                 <Temperature vitalSigns={this.state.vitalSigns} typeGraf="bp" />
                                               </Grid>
                                               <Grid item xs={12}>
-
                                                 <Temperature vitalSigns={this.state.vitalSigns} typeGraf="temperature" />
                                               </Grid>
                                               <Grid item xs={12}>
-
                                                 <Temperature vitalSigns={this.state.vitalSigns} typeGraf="bloodOxygenLevel" />
                                               </Grid>
                                               <Grid item xs={12}>
-
                                                 <Temperature vitalSigns={this.state.vitalSigns} typeGraf="respiratoryRate" />
                                               </Grid>
                                               <Grid item xs={12}>
-
                                                 <Temperature vitalSigns={this.state.vitalSigns} typeGraf="heartRate" />
                                               </Grid>
                                             </Grid>
@@ -1607,19 +1545,13 @@ class PatientsTable extends React.Component {
                                           :
                                           null
                                         }
-
                                       </Grid>
                                     </div>
                                     :
                                     null
                                   }
-
-
                                   {this.state.value === 4 ?
-
-
                                     <div >
-
                                       <Grid container spacing={2} style={{ maxHeight: '525px' }} >
                                         <Grid item xs={12} style={{ backgroundColor: '#FFF' }}>
                                           <div style={{
@@ -1627,29 +1559,22 @@ class PatientsTable extends React.Component {
                                             backgroundColor: '#FFF',
                                             justifyContent: "center",
                                             alignItems: "center",
-
                                           }}>
-                                            {/* <div style={{ position:'absolute', marginTop:'20px'}}> */}
                                             <center>
                                               <Tabs
                                                 value={this.state.valueGHQ}
                                                 indicatorColor="secondary"
-
                                                 textColor="secondary"
                                                 onChange={this.handleChangeGHQ}
                                                 aria-label="disabled tabs example"
                                               >
                                                 <Tab label="Current" />
                                                 <Tab label="History" />
-
-
                                               </Tabs>
                                             </center>
-                                            {/* </div> */}
                                           </div>
                                         </Grid>
                                         {this.state.valueGHQ === 0 ?
-
                                           <Grid item xs={12} style={{ padding: 20 }}>
                                             {this.state.dataLoaded ?
                                               <Grid container spacing={2}>
@@ -1657,9 +1582,7 @@ class PatientsTable extends React.Component {
                                                   <TableContainer component={Paper} style={{ maxHeight: '500px', marginTop: '10px' }}>
                                                     <Table aria-label="collapsible table">
                                                       <TableHead>
-
                                                         <TableRow style={{ backgroundColor: '#01579b', color: '#000' }}>
-
                                                           <TableCell style={{ color: '#FFF' }}>Question</TableCell>
                                                           <TableCell align="right" style={{ color: '#FFF' }}>Answer</TableCell>
                                                         </TableRow>
@@ -1667,10 +1590,8 @@ class PatientsTable extends React.Component {
                                                       <TableBody>
                                                         {this.state.currentQuestionnaire.qAndA.slice(this.state.pageGHQ * this.state.rowsPerPageGHQ, this.state.pageGHQ * this.state.rowsPerPageGHQ + this.state.rowsPerPageGHQ).map((row) => (
                                                           <TableRow key={row.id}>
-
                                                             <TableCell align="left">{row.text}</TableCell>
                                                             <TableCell align="right">{row.answer === 0 ? 'Better than usual' : row.answer === 1 ? "Same as usual" : row.answer === 2 ? "Worse than usual" : "Much worse than usual"}</TableCell>
-
                                                           </TableRow>
                                                         ))}
                                                       </TableBody>
@@ -1689,126 +1610,106 @@ class PatientsTable extends React.Component {
                                                 <Grid item xs={6}>
                                                   <TableContainer component={Paper} style={{ maxHeight: '500px', marginTop: '10px' }}>
                                                     <Table aria-label="collapsible table">
-                                                  
                                                       <TableBody>
                                                         <TableRow>
-
                                                           <TableCell style={{ color: '#000' }}>Somatic symptoms</TableCell>
                                                           <TableCell style={{ color: '#000' }}>{this.state.currentQuestionnaire.scores.f1}</TableCell>
                                                         </TableRow>
                                                         <TableRow>
-
                                                           <TableCell style={{ color: '#000' }}>Anxiety/insomnia</TableCell>
                                                           <TableCell style={{ color: '#000' }}>{this.state.currentQuestionnaire.scores.f2}</TableCell>
                                                         </TableRow>
                                                         <TableRow>
-
                                                           <TableCell style={{ color: '#000' }}>Social dysfunction</TableCell>
                                                           <TableCell style={{ color: '#000' }}>{this.state.currentQuestionnaire.scores.f3}</TableCell>
                                                         </TableRow>
                                                         <TableRow>
-
                                                           <TableCell style={{ color: '#000' }}>Severe depression</TableCell>
                                                           <TableCell style={{ color: '#000' }}>{this.state.currentQuestionnaire.scores.f4}</TableCell>
                                                         </TableRow>
-                                                        <TableRow style={{ backgroundColor: '#D3D3D3'}}>
-
+                                                        <TableRow style={{ backgroundColor: '#D3D3D3' }}>
                                                           <TableCell style={{ color: '#000' }}>Total</TableCell>
                                                           <TableCell style={{ color: '#000' }}>{this.state.currentQuestionnaire.scores.total}</TableCell>
                                                         </TableRow>
                                                         <TableRow style={{ backgroundColor: '#D3D3D3' }}>
-
-                                                          <TableCell style={{ color: '#000' }}>Recommandation</TableCell>
-                                                          <TableCell style={{ color: this.state.currentQuestionnaire.scores.total <= 24 ? "#000" : this.state.currentQuestionnaire.scores.total <= 48 ? "#FFA500" : "#FF0000" }}>{this.state.currentQuestionnaire.scores.total <= 24 ? "No recommandation" : this.state.currentQuestionnaire.scores.total <= 48 ? "We recommend a visit to the patient" : "Patient should be consulted immediatly"  }</TableCell>
+                                                          <TableCell style={{ color: '#000' }}>
+                                                            Recommendation</TableCell>
+                                                          <TableCell style={{ color: this.state.currentQuestionnaire.scores.total <= 24 ? "#000" : this.state.currentQuestionnaire.scores.total <= 48 ? "#FFA500" : "#FF0000" }}>{this.state.currentQuestionnaire.scores.total <= 24 ? "No recommendation" : this.state.currentQuestionnaire.scores.total <= 48 ? "We recommend a visit to the patient" : "Patient should be consulted immediately"}</TableCell>
                                                         </TableRow>
                                                       </TableBody>
-                                         
                                                     </Table>
-
                                                   </TableContainer>
-
-
                                                 </Grid>
                                               </Grid>
-                                              : null}
-                                          </Grid>
-
-
-                                          :
-                                          null}
-                                        {this.state.valueGHQ === 1 ?
-                                          <Grid item xs={12} style={{ padding: 20 }}>
-                                            {this.state.dataLoaded ?
-                                            <Grid container spacing={2}>
-                                              <Grid item xs={12}>
-
-                                                <TableContainer component={Paper} style={{ maxHeight: '500px', marginTop: '10px' }}>
-                                                  <Table aria-label="collapsible table">
-                                                    <TableHead>
-
-                                                      <TableRow style={{ backgroundColor: '#01579b', color: '#000' }}>
-
-                                                        <TableCell style={{ color: '#FFF' }}>Date</TableCell>
-                                                        <TableCell align="right" style={{ color: '#FFF' }}>Somatic symptoms</TableCell>
-                                                        <TableCell align="right" style={{ color: '#FFF' }}>Anxiety/insomnia</TableCell>
-                                                        <TableCell align="right" style={{ color: '#FFF' }}>Social dysfunction</TableCell>
-                                                        <TableCell align="right" style={{ color: '#FFF' }}>Severe depression</TableCell>
-                                                        <TableCell align="right" style={{ color: '#FFF' }}>Total</TableCell>
-                                                      </TableRow>
-                                                    </TableHead>
-                                                    <TableBody>
-                                                      {this.state.questionnaireHistory.slice(this.state.pageGHQ * this.state.rowsPerPageGHQ, this.state.pageGHQ * this.state.rowsPerPageGHQ + this.state.rowsPerPageGHQ).map((row) => (
-                                                        <TableRow key={row.id}>
-
-                                                          <TableCell align="left">{row.currentDate}</TableCell>
-                                                          <TableCell align="right">{row.scores.f1}</TableCell>
-                                                          <TableCell align="right">{row.scores.f2}</TableCell>
-                                                          <TableCell align="right">{row.scores.f3}</TableCell>
-                                                          <TableCell align="right">{row.scores.f4}</TableCell>
-                                                          <TableCell align="right" style={{ backgroundColor: '#D3D3D3' }} >{row.scores.total}</TableCell>
-                                                        </TableRow>
-                                                      ))}
-                                                    </TableBody>
-                                                  </Table>
-                                                  <TablePagination
-                                                    rowsPerPageOptions={[5, 10, 50]}
-                                                    component="div"
-                                                    count={this.state.currentQuestionnaire.qAndA.length}
-                                                    rowsPerPage={this.state.rowsPerPageGHQ}
-                                                    page={this.state.pageGHQ}
-                                                    onChangePage={this.handleChangePageGHQ}
-                                                    onChangeRowsPerPage={this.handleChangeRowsPerPageGHQ}
-                                                  />
-                                                </TableContainer>
-                                              </Grid>
-                                              <Grid item xs={12}>
-
-                                                  <Ghq questionnaireHistory={this.state.questionnaireHistory} />
-                                              </Grid>
-                                          
-                                            </Grid>
-                                          :
-                                          null
-                                                      }
+                                              :
+                                              null
+                                            }
                                           </Grid>
                                           :
                                           null
                                         }
-
+                                        {this.state.valueGHQ === 1 ?
+                                          <Grid item xs={12} style={{ padding: 20 }}>
+                                            {this.state.dataLoaded ?
+                                              <Grid container spacing={2}>
+                                                <Grid item xs={12}>
+                                                  <TableContainer component={Paper} style={{ maxHeight: '500px', marginTop: '10px' }}>
+                                                    <Table aria-label="collapsible table">
+                                                      <TableHead>
+                                                        <TableRow style={{ backgroundColor: '#01579b', color: '#000' }}>
+                                                          <TableCell style={{ color: '#FFF' }}>Date</TableCell>
+                                                          <TableCell align="right" style={{ color: '#FFF' }}>Somatic symptoms</TableCell>
+                                                          <TableCell align="right" style={{ color: '#FFF' }}>Anxiety/insomnia</TableCell>
+                                                          <TableCell align="right" style={{ color: '#FFF' }}>Social dysfunction</TableCell>
+                                                          <TableCell align="right" style={{ color: '#FFF' }}>Severe depression</TableCell>
+                                                          <TableCell align="right" style={{ color: '#FFF' }}>Total</TableCell>
+                                                        </TableRow>
+                                                      </TableHead>
+                                                      <TableBody>
+                                                        {this.state.questionnaireHistory.slice(this.state.pageGHQ * this.state.rowsPerPageGHQ, this.state.pageGHQ * this.state.rowsPerPageGHQ + this.state.rowsPerPageGHQ).map((row) => (
+                                                          <TableRow key={row.id}>
+                                                            <TableCell align="left">{row.currentDate}</TableCell>
+                                                            <TableCell align="right">{row.scores.f1}</TableCell>
+                                                            <TableCell align="right">{row.scores.f2}</TableCell>
+                                                            <TableCell align="right">{row.scores.f3}</TableCell>
+                                                            <TableCell align="right">{row.scores.f4}</TableCell>
+                                                            <TableCell align="right" style={{ backgroundColor: '#D3D3D3' }} >{row.scores.total}</TableCell>
+                                                          </TableRow>
+                                                        ))}
+                                                      </TableBody>
+                                                    </Table>
+                                                    <TablePagination
+                                                      rowsPerPageOptions={[5, 10, 50]}
+                                                      component="div"
+                                                      count={this.state.currentQuestionnaire.qAndA.length}
+                                                      rowsPerPage={this.state.rowsPerPageGHQ}
+                                                      page={this.state.pageGHQ}
+                                                      onChangePage={this.handleChangePageGHQ}
+                                                      onChangeRowsPerPage={this.handleChangeRowsPerPageGHQ}
+                                                    />
+                                                  </TableContainer>
+                                                </Grid>
+                                                <Grid item xs={12}>
+                                                  <Ghq questionnaireHistory={this.state.questionnaireHistory} />
+                                                </Grid>
+                                                <Grid item xs={12}>
+                                                  <GhqTotal questionnaireHistory={this.state.questionnaireHistory} />
+                                                </Grid>
+                                              </Grid>
+                                              :
+                                              null
+                                            }
+                                          </Grid>
+                                          :
+                                          null
+                                        }
                                       </Grid>
                                     </div>
                                     :
                                     null
                                   }
-
-
-
-
                                   {this.state.value === 5 ?
-
-
                                     <div >
-
                                       <Grid container spacing={2} style={{ maxHeight: '525px', padding: '20px' }} >
                                         <Grid item xs={11}>
                                           <ValidationTextField
@@ -1862,7 +1763,6 @@ class PatientsTable extends React.Component {
                                                 <Divider variant="inset" component="li" />
                                               </div>
                                             ))}
-
                                           </List>
                                         </Grid>
                                       </Grid>
@@ -1872,13 +1772,18 @@ class PatientsTable extends React.Component {
                                   }
                                 </Grid>
                               </Grid>
-
                             </CardContent>
                           </div>
                         </div>
+                        <Snackbar open={this.state.openNotification} autoHideDuration={3000} onClose={this.handleCloseNotification} anchorOrigin={{ vertical, horizontal }}>
+                          <Alert onClose={this.handleCloseNotification} severity={this.state.typeNotification}>
+                            {this.state.messageNotification}
+                          </Alert>
+                        </Snackbar>
                       </Card>
                     </Grid>
                   </Grid>
+             
                 </div>
             }
           </header>

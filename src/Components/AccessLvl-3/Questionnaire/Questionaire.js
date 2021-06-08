@@ -7,24 +7,18 @@ import Grid from '@material-ui/core/Grid';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
-import Checkbox from '@material-ui/core/Checkbox';
-import Input from '@material-ui/core/Input';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Divider from '@material-ui/core/Divider';
-import InputLabel from '@material-ui/core/InputLabel';
 import { withRouter } from 'react-router-dom'
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import withStyles from '@material-ui/core/styles/withStyles';
 import questions from '../../Questionaire/questions.json';
 import './Symptoms.css';
-import TextField from '@material-ui/core/TextField';
-import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import Card from '@material-ui/core/Card';
-import { addVitalSigns, getTodayRegister, addQuestionnaire } from '../../utils/UserFunctions';
+import { addQuestionnaire } from '../../utils/UserFunctions';
 import jwt_decode from 'jwt-decode';
 import CardContent from '@material-ui/core/CardContent';
 
@@ -95,26 +89,6 @@ const styles = theme => ({
     }
 });
 
-
-const ValidationTextField = withStyles({
-    root: {
-        "& .MuiFormLabel-root": {
-            color: "black" // or black
-        },
-        '& input:valid + fieldset': {
-            borderColor: '#01579b',
-            borderWidth: 2,
-        },
-        '& input:invalid + fieldset': {
-            borderColor: '01579b',
-            borderWidth: 2,
-        },
-        '& input:valid:focus + fieldset': {
-            borderLeftWidth: 6,
-            padding: '4px !important', // override inline-style
-        },
-    },
-})(TextField);
 
 
 class LoginForm extends React.Component {

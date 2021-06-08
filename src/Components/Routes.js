@@ -16,6 +16,8 @@ import MedsUser from './AccessLvl-3/Meds/Meds';
 import SymptomsUser from './AccessLvl-3/Symptoms/Symptoms';
 import MedicalStaff from './AccessLvl-3/MedicalStaff/MedicalStaff';
 import Questionnaire from './AccessLvl-3/Questionnaire/Questionaire'
+import UserList from './AccessLvl-4/Users/Users';
+import DiseaseList from './AccessLvl-4/Disease/Disease'
 
 const RoutingConfig = () => (
   <Router>
@@ -32,7 +34,8 @@ const RoutingConfig = () => (
     <Route path="/symptomsUser" component={SymptomsUser} />
     <Route path="/medicalStaff" component={MedicalStaff} />
     <Route path="/questionnaire" component={Questionnaire}/>
-
+    <Route path="/userList" component={UserList} />
+    <Route path="/diseaseList" component={DiseaseList} />
 
   </Router>
 );

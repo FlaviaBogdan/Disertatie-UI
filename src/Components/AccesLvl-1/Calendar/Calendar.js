@@ -275,7 +275,7 @@ class Calendar extends React.Component {
           address: address
         }
 
-        const newVisitAdded = await addVisits(visit);
+        await addVisits(visit);
       }
 
       if (this.state.lvlAccess === 2) {
@@ -292,7 +292,7 @@ class Calendar extends React.Component {
           address: address
         }
 
-        const newVisitAdded = await addVisits(visit);
+        await addVisits(visit);
       }
     
       const visits = await getVisitsForUser(this.state.currentUser, this.state.lvlAccess);

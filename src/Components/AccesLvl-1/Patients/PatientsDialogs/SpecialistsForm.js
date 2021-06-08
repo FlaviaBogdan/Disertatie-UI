@@ -104,7 +104,12 @@ class SpecialistsForm extends React.Component {
         filtered.forEach(function (obj) {
             obj.id = obj.userID;
             obj.name = obj.lastName + " " + obj.firstName;
-            obj.fullAddress = obj.address.country + ", " + obj.address.city + ", " + obj.address.postalCode + ", " + obj.address.street + ", " + obj.address.adrLine ;
+            if (obj.address){
+                obj.fullAddress = obj.address.country + ", " + obj.address.city + ", " + obj.address.postalCode + ", " + obj.address.street + ", " + obj.address.adrLine;
+            }
+           else{
+                obj.fullAddress = ""
+           }
             delete obj.userID;
             delete obj.address;
             let test = new Date(obj.dateOfBirth);

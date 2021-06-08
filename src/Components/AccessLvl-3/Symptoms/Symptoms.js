@@ -1,25 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
-import Checkbox from '@material-ui/core/Checkbox';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
 import { withRouter } from 'react-router-dom'
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
-
 import './Symptoms.css';
 import TextField from '@material-ui/core/TextField';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import Card from '@material-ui/core/Card';
-import { addVitalSigns, getTodayRegister, addHealthStatus} from '../../utils/UserFunctions';
+import { addVitalSigns, getPatientName, getTodayRegister, addHealthStatusAndEmail, getPatientDoctorListByUser, addHealthStatus } from '../../utils/UserFunctions';
 import jwt_decode from 'jwt-decode';
 import CardContent from '@material-ui/core/CardContent';
 
@@ -112,6 +106,7 @@ class LoginForm extends React.Component {
             vitalSignsID: "",
             today: "",
             entryToday: false,
+            patientName: "",
         }
         this.handleClick = this.handleClick.bind(this)
         this.sendSymptoms = this.sendSymptoms.bind(this)
@@ -126,6 +121,11 @@ class LoginForm extends React.Component {
                 this.setState({
                     currentUserID: decoded._id,
                     today: tod
+                })
+                getPatientName(decoded._id).then((res)=>{
+                    this.setState({
+                        patientName: res
+                    })
                 })
             } catch (err) {
                 alert(err);
@@ -163,20 +163,107 @@ class LoginForm extends React.Component {
 
     };
 
-    sendSymptoms(){
-const details = {
-    vitalSignsID : this.state.vitalSignsID,
-    status: this.state.healthState,
-    symptoms: this.state.description,
-}
-        console.log("DET. ", details )
-        addHealthStatus(details).then((res) => {
-            console.log("RESP ", res)
-            if(res === 204){
-                this.props.history.push(`/calendar`)
+    sendSymptoms() {
+        let arr = []
+        console.log("RIGHT PLACE")
+        getPatientDoctorListByUser(this.state.currentUserID).then((res) => {
+            console.log("DOCTORS ", res)
+            if (res) {
+                // distolic: '',
+                //     systolic: '',
+                //         temperature: '',
+                //             bloodOxygenLvl: '',
+                //                 heartRate: '',
+                //                     respiratoryRate: '',
+                let message = "";
+                let distolic = this.state.distolic;
+                let systolic = this.state.systolic;
+                let temperature = this.state.temperature;
+                let bloodOxygenLvl = this.state.bloodOxygenLvl;
+                let heartRate = this.state.heartRate;
+                let respiratoryRate = this.state.respiratoryRate;
+                if (distolic <= 70 || systolic < 110){
+                    message = message + "BP - diastolic: " + distolic + ". BP - systolic: " + systolic + " - Patient suspected of hypotension  \r\n"
+                }
+                if (distolic > 80 || systolic > 130) {
+                    message = message + "BP - diastolic: " + distolic + ". BP - systolic: " + systolic + " - Patient suspected of hypertension  \r\n"
+                }
+            
+                if (temperature <= 36) {
+                    message = message + "Temperature: " + temperature + "- Patient suspected of hypothermia  \r\n"
+                }
+                if (temperature > 37) {
+                    message = message + "Temperature: " + temperature + "- Patient suspected of fever  \r\n"
+                }
+                if (bloodOxygenLvl <= 80) {
+                    message = message + "Oxygen Level: " + bloodOxygenLvl + "- Patient suspected of hypoxemia  \r\n"
+                }
+                if (bloodOxygenLvl > 37) {
+                    message = message + "Oxygen Level: " + bloodOxygenLvl + "- Patient suspected of  \r\n"
+                }
+                if (heartRate <= 60) {
+                    message = message + "Heart rate: " + heartRate + "- Patient suspected of bradycardia  \r\n"
+                }
+                if (heartRate > 100) {
+                    message = message + "Heart rate: " + heartRate + "- Patient suspected of tachycardia \r\n"
+                } 
+                if (respiratoryRate <= 12) {
+                    message = message + "Heart rate: " + respiratoryRate + "- Patient suspected of bradypnea  \r\n"
+                }
+                if (respiratoryRate > 18) {
+                    message = message + "Heart rate: " + respiratoryRate + "- Patient suspected of tachypnea \r\n"
+                }
+                if(message !== ""){
+                    message = message + "Check the patient!"
+                    let subject = "Patient " + this.state.currentUserID
+                    let toSend = res;
+                    const details = {
+                        vitalSignsID: this.state.vitalSignsID,
+                        status: this.state.healthState,
+                        symptoms: this.state.description,
+                    }
+                    console.log("DET. ", details)
+                    addHealthStatusAndEmail(details, toSend, message,subject).then((res) => {
+                        console.log("RESP ", res)
+                        if (res === 204) {
+                            this.props.history.push(`/calendar`)
+                        }
+                    })
+                }
+                else{
+                    const details = {
+                        vitalSignsID: this.state.vitalSignsID,
+                        status: this.state.healthState,
+                        symptoms: this.state.description,
+                    }
+                    console.log("DET. ", details)
+                    addHealthStatus(details).then((res) => {
+                        console.log("RESP ", res)
+                        if (res === 204) {
+                            this.props.history.push(`/calendar`)
+                        }
+                    })
+                }
+
+            }
+            else {
+                const details = {
+                    vitalSignsID: this.state.vitalSignsID,
+                    status: this.state.healthState,
+                    symptoms: this.state.description,
+                }
+                console.log("DET. ", details)
+                addHealthStatus(details).then((res) => {
+                    console.log("RESP ", res)
+                    if (res === 204) {
+                        this.props.history.push(`/calendar`)
+                    }
+                })
             }
         })
- 
+        console.log("SDSDS arr", arr)
+
+
     }
 
     handleClick() {
@@ -191,7 +278,7 @@ const details = {
             bloodOxygenLevel: this.state.bloodOxygenLvl,
             heartRate: this.state.heartRate,
             respiratoryRate: this.state.respiratoryRate,
-
+            patientName: this.state.patientName,
             systolic: this.state.systolic,
             diastolic: this.state.distolic,
 
@@ -317,7 +404,7 @@ const details = {
                                         Vital Signs
                         </Typography>
                                 </div>
-                                   <div style={{ alignContent: "left", textAlign: 'left' }}>
+                                <div style={{ alignContent: "left", textAlign: 'left' }}>
                                     <Typography variant="subtitle2" component="h2" className={classes.instructions}>
                                         Please register your vital signs
                         </Typography>
@@ -463,7 +550,7 @@ const details = {
                             </CardContent>
                         </Card>
                         :
-                       null
+                        null
                 }
             </header>
         );

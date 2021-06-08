@@ -13,13 +13,8 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
-import { DataGrid } from '@material-ui/data-grid';
-import jwt_decode from 'jwt-decode';
-import { getDoctorsDetails, getPatientDoctorList, modifyIllness } from '../../../utils/UserFunctions'
-
-
+import { modifyIllness, getDiseaseList} from '../../../utils/UserFunctions'
 
 const styles = theme => ({
     main: {
@@ -68,29 +63,44 @@ const ValidationTextField = withStyles({
     },
 })(TextField);
 
-class SpecialistsForm extends React.Component {
+class IllnessForm extends React.Component {
     state = {
         patient_id: "",
         illnessField: "",
-        illnessArray: []
+        illnessArray: [],
+        disease2: '',
+        diseaseList: []
     }
     constructor(props) {
         super(props);
-        console.log("FORM")
         this.state.patient_id = this.props.patientDetails
         this.state.illnessArray = this.props.illness
-       // console.log("  this.props.illness  ", this.props.illness)
-        // this.addIllnessToArray = this.addIllnessToArray.bind(this)
-        // this.deleteEntry = this.deleteEntry.bind(this)
+
     }
 
+    componentWillMount(){
+        getDiseaseList().then((res)=>{
+            if(res.status === 200){
+                this.setState({
+                    diseaseList: res.data
+                })
+            }
+        })
+    }
     addIllnessToArray() {
         let initialArray = this.state.illnessArray;
-        console.log(initialArray, " initialArray")
         initialArray.push(this.state.illnessField);
         this.setState({
             illnessArray: initialArray,
             illnessField: ""
+        })
+    }
+    addIllnessToArray2() {
+        let initialArray = this.state.illnessArray;
+        initialArray.push(this.state.disease2);
+        this.setState({
+            illnessArray: initialArray,
+            disease2: ""
         })
     }
 
@@ -105,20 +115,15 @@ class SpecialistsForm extends React.Component {
 
     deleteEntry(value){
         let initialArray = this.state.illnessArray;
-
         let finalArray = initialArray.filter((obj)=>{
             if(obj !== value){
                 return obj;
             }
-        
         })
         this.setState({
             illnessArray: finalArray,
         })
-        console.log("VAL ", finalArray)
     }
-
-
 
     closeDialog = () => {
         const details ={
@@ -127,7 +132,6 @@ class SpecialistsForm extends React.Component {
         }
         modifyIllness(details).then((res)=>{
             if(res.status === 204){
-                console.log("ILLNESSSS ", res)
                 let obj = JSON.parse(res.config.data);
                 this.props.onClose(obj.illness);
             }
@@ -135,26 +139,6 @@ class SpecialistsForm extends React.Component {
                 alert("ERROR!")
             }
         })
-  
-        // let today = new Date();
-        // const note = {
-        //     content : this.state.note,
-        //     createdBy: this.state.currentUser,
-        //     createdOn: today,
-        // }
-        // const details = {
-        //     note: note,
-        //     treatmentID: this.state.currentTreatmentID
-        // }
-        // addNote(details).then((res) => {
-        //     if(res == 204){
-        //         this.props.onClose()
-        //     }
-        //     else{
-        //         alert("ERROR!")
-        //     }
-        // })
-
     }
 
     render() {
@@ -162,7 +146,6 @@ class SpecialistsForm extends React.Component {
         return (
             <main className={classes.main}>
                 <CssBaseline />
-
                 <div className={classes.paper}>
                     <NoteAddIcon style={{
                         color: '#01579b',
@@ -175,22 +158,43 @@ class SpecialistsForm extends React.Component {
                         container
                         spacing={1}
                     >
-
-
                         <Grid item xs={10}>
-                            {/* <ValidationTextField
+
+                            <ValidationTextField
                                 InputProps={{
                                     className: classes.multilineColor
                                 }}
+                                id="disease2"
+                                select
+                                label="Disease from system"
                                 fullWidth
-                                required
-                                id="email"
-                                label="Illness"
-                                value={this.state.illnessField}
-                                defaultValue={this.state.illnessField}
-                                variant="outlined"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                value={this.state.disease2}
                                 onChange={this.changeField.bind(this)}
-                            /> */}
+                                SelectProps={{
+                                    native: true,
+                                }}
+                                variant="outlined"
+                            >
+                                {this.state.diseaseList.map((disease) => (
+                                    <option key={disease._id} value={disease.name}>
+                                        {disease.name}
+                                    </option>
+                                )
+                                )}
+                            </ValidationTextField>
+
+                        </Grid>
+                        <Grid item xs={2}>
+                  
+                            <Button color="primary" style={{ marginTop: 10 }} variant="contained" onClick={() => this.addIllnessToArray2()}>
+                                    Add
+                                                                                </Button>
+                   
+                        </Grid>
+                        <Grid item xs={10}>
                             <ValidationTextField
                                 InputProps={{
                                     className: classes.multilineColor
@@ -229,12 +233,10 @@ class SpecialistsForm extends React.Component {
                                         </ListItem>
                                             <Divider light />
                                         </div>
-                                    ))}
-                            
+                                    ))}                    
                             </List>
                         </Grid>
                     </Grid>
-
                     <Button
                         fullWidth
                         type="submit"
@@ -243,16 +245,15 @@ class SpecialistsForm extends React.Component {
                         onClick={this.closeDialog}
                     >
                         Submit
-                        </Button>
+                    </Button>
                 </div>
-
             </main>
         );
     }
 }
 
-SpecialistsForm.propTypes = {
+IllnessForm.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-export default withRouter(withStyles(styles)(SpecialistsForm));
+export default withRouter(withStyles(styles)(IllnessForm));

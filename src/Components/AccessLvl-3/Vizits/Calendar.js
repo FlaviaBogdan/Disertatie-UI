@@ -3,7 +3,7 @@ import './Calendar.css';
 import Button from '@material-ui/core/Button'
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import { getPatientsNames, getPatientAddressByUserID,getNursesNames, getDoctorsNames,addVisits, deleteVisit, getUserDetails, getPatientAddressByID, modifyVisit, getVisitsForUser } from '../../utils/UserFunctions';
+import { getPatientAddressByUserID,getNursesNames, getDoctorsNames,addVisits, deleteVisit, getUserDetails,  modifyVisit, getVisitsForUser } from '../../utils/UserFunctions';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import jwt_decode from 'jwt-decode';
@@ -260,7 +260,7 @@ class Calendar extends React.Component {
           address: address
         }
 
-        const newVisitAdded = await addVisits(visit);
+        await addVisits(visit);
       }
 
       if (this.state.lvlAccess === 2) {
@@ -277,7 +277,7 @@ class Calendar extends React.Component {
           address: address
         }
 
-        const newVisitAdded = await addVisits(visit);
+        await addVisits(visit);
       }
 
       if (this.state.lvlAccess === 3) {
@@ -294,7 +294,7 @@ class Calendar extends React.Component {
           address: address
         }
 
-        const newVisitAdded = await addVisits(visit);
+         await addVisits(visit);
       }
     
       const visits = await getVisitsForUser(this.state.currentUser, this.state.lvlAccess);

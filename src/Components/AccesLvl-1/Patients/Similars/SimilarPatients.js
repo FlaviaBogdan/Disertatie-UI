@@ -5,54 +5,19 @@ import TableCell from '@material-ui/core/TableCell';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Box from '@material-ui/core/Box';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
 import TableContainer from '@material-ui/core/TableContainer';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-// import Breadcrumbs from '@material-ui/core/Breadcrumbs';
-// import Link from '@material-ui/core/Link';
 import IconButton from '@material-ui/core/IconButton';
 import TableHead from '@material-ui/core/TableHead';
-// import List from '@material-ui/core/List';
-// import Divider from '@material-ui/core/Divider';
-// import ListItemText from '@material-ui/core/ListItemText';
-// import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-// import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
-// import DialogIllness from './PatientsDialogs/ChangeIllness'
-// import './Patients.css'
 import Collapse from '@material-ui/core/Collapse';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-// import DialogSpecialist from './PatientsDialogs/Specialists'
-// import DialogAddress from './PatientsDialogs/RegisterUser'
-// import DialogNote from './PatientsDialogs/AddNoteDialog'
-import { getUserProfile } from '../../../utils/UserFunctions'
 import jwt_decode from 'jwt-decode'
 import withStyles from '@material-ui/core/styles/withStyles';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
-import Brightness1Icon from '@material-ui/icons/Brightness1';
 import Grid from '@material-ui/core/Grid';
-// import TextField from '@material-ui/core/TextField';
-// import PersonIcon from '@material-ui/icons/Person';
-// import RegisterTreatmentDialog from './RegisterUser'
-// import NoteList from './NotesList';
-// import CardMedia from '@material-ui/core/CardMedia';
-// import Avatar from '@material-ui/core/Avatar';
-// import HomeIcon from '@material-ui/icons/Home';
-// import ContactPhoneIcon from '@material-ui/icons/ContactPhone';
-// import CardHeader from '@material-ui/core/CardHeader';
-// import Paper from '@material-ui/core/Paper';
-// import Tabs from '@material-ui/core/Tabs';
-// import Tab from '@material-ui/core/Tab';
-import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
-import Button from '@material-ui/core/Button';
-// import Ghq from './Graf/Ghq';
-import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
-// import VitalSignsGrid from './Graf/vitalSigns'
-// import questions from '../../Questionaire/questions.json';
-// import Temperature from './Graf/Temperature'
 
 const columns = [
     { id: 'name', label: 'Name', minWidth: 100, hide: true },
@@ -65,15 +30,6 @@ const columns = [
     { id: 'treatmentDoctor', label: 'Prescribed by', minWidth: 100 },
 ];
 
-function createData(illness, notes, treatmentHistory, userID, newImage, firstName, lastName, birthday, gender, phone, severity, gravity, address, _id) {
-    return {
-        illness, notes, treatmentHistory, userID, newImage, firstName, lastName, birthday, gender, phone, severity, gravity, address: [
-            { country: address.country, city: address.city, postalCode: address.postalCode, street: address.street, details: address.adrLine }
-        ],
-        _id
-    };
-}
-
 const styles = theme => ({
     container: {
         maxWidth: "100%",
@@ -84,12 +40,6 @@ const styles = theme => ({
         position: 'absolute',
         overflowY: false
     },
-    // paper: {
-    //     height: 300,
-    //     width: 550,
-
-    // },
-
     root6: {
         minWidth: 480,
         maxWidth: 480,
@@ -328,7 +278,7 @@ class PatientsTable extends React.Component {
                         {this.state.loading ?
                             <div>
 
-                                <TableContainer className={classes.container} style={{ maxHeight: '500px' }}>
+                                <TableContainer className={classes.container} style={{ maxHeight: '400px' }}>
                                     <Table stickyHeader aria-label="sticky table">
                                         <TableHead>
                                             <TableRow style={{ backgroundColor: '#01579b', color: '#FFF' }}>

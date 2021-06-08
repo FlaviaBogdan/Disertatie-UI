@@ -4,15 +4,11 @@ import {
     ArgumentAxis,
     ValueAxis,
     Chart,
-    LineSeries,
     Title,
     SplineSeries,
     Legend,
     Tooltip,
 } from '@devexpress/dx-react-chart-material-ui';
-
-
-
 
 export default class Demo extends React.PureComponent {
     state = {
@@ -20,13 +16,13 @@ export default class Demo extends React.PureComponent {
         vitalSigns: [],
         loading : true,
     };
+
     constructor(props) {
         super(props);
         this.state.data = this.props.vitalSigns;
-        console.log("this.props.vitalSigns", this.props.vitalSigns)
     }
+
     componentWillMount(){
-        console.log(this.state.data, "data")
         let formattedData = this.state.data;
         let newData = formattedData.map(function (obj) {
             let bp = obj.bloodPressure;
@@ -34,19 +30,15 @@ export default class Demo extends React.PureComponent {
             obj.diastolic = bp.diastolic;
             return obj;
         })
-        console.log("newData", newData)
         this.setState({
             data: newData,
             loading: false
         })
-
     }
 
     render() {
         const { data: chartData } = this.state;
-
         return (
-            
             <Paper>
                 {this.state.loading ? null : 
                 <Chart

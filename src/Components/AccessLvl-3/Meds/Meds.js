@@ -1,23 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
-import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Radio from '@material-ui/core/Radio';
-import Popover from '@material-ui/core/Popover';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import Checkbox from '@material-ui/core/Checkbox';
-import { DataGrid } from '@material-ui/data-grid';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-
 import DeleteIcon from '@material-ui/icons/Delete';
 import { withRouter } from 'react-router-dom'
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import Table from '@material-ui/core/Table';
@@ -35,46 +23,21 @@ import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import TextField from '@material-ui/core/TextField';
-import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import Card from '@material-ui/core/Card';
-import { addVitalSigns, getTodayRegister, addHealthStatus, getPatientTreatHistoryIDs, getCurrentTreatmentForUser, getDrugByID, getUserDetails, getUserName, removeUserSettings, addUserSettings } from '../../utils/UserFunctions';
+import { getPatientTreatHistoryIDs, getCurrentTreatmentForUser, getDrugByID, getUserDetails, getUserName, removeUserSettings, addUserSettings } from '../../utils/UserFunctions';
 import jwt_decode from 'jwt-decode';
 import TablePagination from '@material-ui/core/TablePagination';
 import CardContent from '@material-ui/core/CardContent';
-import { makeStyles } from '@material-ui/core/styles';
-import { lightGreen } from '@material-ui/core/colors';
-import { CropLandscapeOutlined } from '@material-ui/icons';
-
-
-const columns = [
-    { field: 'id', headerName: 'ID', width: 110, hide: true },
-    { field: 'name', headerName: 'Name', width: 110 },
-    { field: 'administration', headerName: 'Administration', width: 150 },
-    { field: 'frequency', headerName: 'Frequency', width: 110 },
-    { field: 'notes', headerName: 'Notes', width: 150 },
-    { field: 'administrationHour', headerName: 'Administration Hour', width: 250, editable: true },
-
-];
-
-const useRowStyles = makeStyles({
-    root: {
-        '& > *': {
-            borderBottom: 'unset',
-        },
-    },
-});
 
 
 const styles = theme => ({
-
-
-    paper: {
-        // marginTop: theme.spacing.unit * 8,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: `${theme.spacing(2)}px ${theme.spacing(3)}px ${theme.spacing(3)}px`,
-    },
+    // paper: {
+    //     // marginTop: theme.spacing.unit * 8,
+    //     display: 'flex',
+    //     flexDirection: 'column',
+    //     alignItems: 'center',
+    //     padding: `${theme.spacing(2)}px ${theme.spacing(3)}px ${theme.spacing(3)}px`,
+    // },
 
     multilineColor: {
         color: 'black'
@@ -149,25 +112,7 @@ const styles = theme => ({
 });
 
 
-const ValidationTextField = withStyles({
-    root: {
-        "& .MuiFormLabel-root": {
-            color: "black" // or black
-        },
-        '& input:valid + fieldset': {
-            borderColor: '#01579b',
-            borderWidth: 2,
-        },
-        '& input:invalid + fieldset': {
-            borderColor: '01579b',
-            borderWidth: 2,
-        },
-        '& input:valid:focus + fieldset': {
-            borderLeftWidth: 6,
-            padding: '4px !important', // override inline-style
-        },
-    },
-})(TextField);
+
 
 
 class Row extends React.Component {
@@ -359,21 +304,8 @@ function createData(medID, name, administration, frequency, notes, userAdministr
         frequency,
         notes,
         userAdministration
-        // userAdministration: [
-        //     { hour: userAdministration.hour, minute: userAdministration.minute, time: userAdministration.time},
-
-        // ],
     };
 }
-
-const rows = [
-    createData('Frozen yoghurt', 159, 6.0, 24, 4.0, 3.99),
-    createData('Ice cream sandwich', 237, 9.0, 37, 4.3, 4.99),
-    createData('Eclair', 262, 16.0, 24, 6.0, 3.79),
-    createData('Cupcake', 305, 3.7, 67, 4.3, 2.5),
-    createData('Gingerbread', 356, 16.0, 49, 3.9, 1.5),
-];
-
 
 class LoginForm extends React.Component {
     constructor(props) {
@@ -400,7 +332,6 @@ class LoginForm extends React.Component {
     }
 
     onDelete(time, medIDCallback) {
-        console.log("TIMEEE  ", time)
         let currTreatment = this.state.currentTreatment._id;
         let details = {
             treatmentID: currTreatment,
@@ -410,47 +341,28 @@ class LoginForm extends React.Component {
 
         removeUserSettings(details).then((res) => {
             if (res === 204) {
-
                 let test = this.state.rows;
                 let test2 = test.map(function (obj) {
-                   // console.log("DRUGS", obj)
-
-
                     if (obj.medID === medIDCallback) {
                         let index = -1;
                         for (let j = 0; j < obj.userAdministration.length; j++) {
-                            console.log("DRUGS", obj.userAdministration[j])
-                            if (obj.userAdministration[j].hour == time.hour) {
-                                if (obj.userAdministration[j].minute == time.minute) {
-                                    if (obj.userAdministration[j].time == time.time) {
-                                        console.log("HERE")
+                            if (obj.userAdministration[j].hour === time.hour) {
+                                if (obj.userAdministration[j].minute === time.minute) {
+                                    if (obj.userAdministration[j].time === time.time) {
                                         index = j;
-                                      
-                                       
                                     }
                                 }
                             }
                         }
                         if(index!== -1){
                             delete obj.userAdministration[index];
-                        }
-                        
-                    }
-            
+                        }                   
+                    }           
                     return obj
-
-
-
                 });
-
-
-                // var filtered = test.filter(function (value, index, arr) {
-                //     return value.medID != medIDCallback;
-                // });
                 this.setState({
                     rows: test2
                 })
-                console.log("row  ", time, "  medID  ", test2)
             }
         })
     }
@@ -458,14 +370,10 @@ class LoginForm extends React.Component {
     addRow(medID2) {
         let test = this.state.rows;
         let currTreatment = this.state.currentTreatment._id;
-
-        // let actualValue = test.find(({ medID }) => medID = medID2)
         let test2 = test.map(function (obj) {
             if (obj.medID === medID2) {
                 let time = obj.newValue;
                 let hour = parseInt(time.substring(0, 2));
-                // console.log("TIME hour ", hour)
-                // console.log("TIME ", time)
                 let minute = parseInt(time.substring(3, 7));
                 let format = ""
                 if (hour >= 12 && hour <= 23) {
@@ -480,8 +388,7 @@ class LoginForm extends React.Component {
                     }
                     format = "AM"
                 }
-                // console.log("TIME minute ", test[0].userAdministration)
-                if (minute == 0) {
+                if (minute === 0) {
                     minute = "00"
                 }
                 const settings = {
@@ -494,10 +401,9 @@ class LoginForm extends React.Component {
                     drugID: medID2,
                     admSettings: settings
                 }
-                console.log("TO BE SENT", details);
                 addUserSettings(details).then((res) => {
                     if (res === 204) {
-                        console.log("SUCCESS")
+ 
                     }
                 })
                 obj.userAdministration.push({
@@ -512,35 +418,15 @@ class LoginForm extends React.Component {
             }
 
         });
-        // let actualValue = test.find(({ medID }) => medID = medID2).de
-        // console.log("TIME ", actualValue)
-        // const hour = time.substring(0, 2);
-        // console.log("TIME hour ", hour)
-        // console.log("TIME ",time)
-        // const minute = time.substring(3, 7);
-        // console.log("TIME minute ", test[0].userAdministration)
-        // test[0].userAdministration.push({
-        //     hour: 9,
-        //     minute: 10
-        // })
+
         this.setState({
             rows: test2
         })
-        // test.find(({ medID }) => medID = medID2).userAdministration.push = time
+
     }
     virtualValueSet(medId2, time) {
-        //   let userToLogin = { ...this.state };
-        // userToLogin[event.target.id] = event.target.value;
-        // this.setState({
-        //     ...userToLogin
-        // })
-        console.log("medId2", medId2)
-        console.log("medId2", time)
         let test = this.state.rows;
-        test.find(({ medID }) => medID == medId2).newValue = time
-        // let userToLogin = { ...this.state };
-        console.log("FFFFFFFFFFFFF", test)
-        // userToLogin[medId2] = event.target.value;
+        test.find(({ medID }) => medID === medId2).newValue = time
         this.setState({
             rows: test
         })
@@ -548,19 +434,14 @@ class LoginForm extends React.Component {
 
     async componentWillMount() {
         const token = localStorage.usertoken
-        let treatment = {};
         if (token) {
             try {
                 const decoded = jwt_decode(token)
-                let tod = new Date();
-
                 this.setState({
                     currentUserID: decoded._id,
-
                 })
                 let that = this;
                 const test = await getPatientTreatHistoryIDs(decoded._id);
-                console.log("FSFDDDDDDDDDDDDDDDDDDD", test)
                 test.forEach(function (obj) {
                     console.log("ID: ", test)
                     let treatmentHistory = [];
@@ -569,7 +450,6 @@ class LoginForm extends React.Component {
                         if (res.status === 200) {
                           
                             if (res.data.current === true) {
-                                let user = "";
                                 getUserDetails(res.data.doctorID).then((res2) => {
                                     getUserName(res.data.createdBy).then((res3) => {
                                         res.data.doctorDetails = res2;
@@ -579,20 +459,14 @@ class LoginForm extends React.Component {
                                             createdByUser: res3,
                                             loading:false
                                         })
-                                        console.log("TESTTTTTTTTTT " + that.state.createdByUser)
                                     })
-
-                                })
-                              
+                                })                             
                                 res.data.drugs.forEach(function (obj) {
                                     getDrugByID(obj.medID).then((res) => {
                                         if (res.status === 200) {
                                             obj.name = res.data.Name;
                                             obj.administration = res.data.Administration;
-
                                             let admDate = new Date(obj.administrationHour);
-                                            let minutes = admDate.getMinutes();
-                                            let hour = admDate.getHours();
                                             obj.administrationHour = admDate.toLocaleTimeString('en-US');
                                             rowsToSet.push(createData(obj.medID, res.data.Name, res.data.Administration, obj.frequency, obj.notes, obj.userAdministration))
                                         }
@@ -600,17 +474,12 @@ class LoginForm extends React.Component {
                                     })
 
                                 })
-                                console.log("NO WAY ", res.data)
-                                console.log("TEST USER " + that.state.createdByUser)
+
                                 that.setState({
                                     currentTreatment: res.data,
-                
-                                    
                                     drugs: res.data.drugs,
                                     rows: rowsToSet,
                                 })
-                               
-                                console.log("res.data fdsfs ", that.state.currentTreatment)
                             }
                             else {
                                 if (res.data.doctorID && res.data.createdBy) {
@@ -633,15 +502,12 @@ class LoginForm extends React.Component {
                                                 treatmentHistory: treatmentHistory
                                             })
                                         })
-
                                     })
                                 }
                                 else if (res.data.doctorID) {
                                     getUserDetails(res.data.doctorID).then((res2) => {
-                   
                                         res.data.doctorDetails = res2;
                                         treatmentHistory.push(res.data)
-                                        console.log("FDSFS", res.data);
                                         that.setState({
                                             treatmentHistory: treatmentHistory
                                         })
@@ -656,20 +522,14 @@ class LoginForm extends React.Component {
                                         })
                                     })
                                 }
-
                             }
-
                         }
-
                     })
-
                 })
             }
             catch (err) {
                 alert(err);
             }
-
-       
         }
     }
 

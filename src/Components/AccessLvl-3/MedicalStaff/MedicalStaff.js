@@ -1,31 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import Checkbox from '@material-ui/core/Checkbox';
-import Input from '@material-ui/core/Input';
 import HomeIcon from '@material-ui/icons/Home';
 import ContactPhoneIcon from '@material-ui/icons/ContactPhone';
-import Paper from '@material-ui/core/Paper';
-import InputLabel from '@material-ui/core/InputLabel';
 import { withRouter } from 'react-router-dom'
-import { red } from '@material-ui/core/colors';
 import PersonIcon from '@material-ui/icons/Person';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
 import CardHeader from '@material-ui/core/CardHeader';
 import './Symptoms.css';
-import TextField from '@material-ui/core/TextField';
-import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import Card from '@material-ui/core/Card';
-import { addVitalSigns, getUserProfile, getPatientByUserID } from '../../utils/UserFunctions';
+import { getUserProfile, getPatientByUserID } from '../../utils/UserFunctions';
 import jwt_decode from 'jwt-decode';
 import CardContent from '@material-ui/core/CardContent';
 

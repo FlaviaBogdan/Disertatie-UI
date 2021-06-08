@@ -2,14 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
+import 'react-notifications/lib/notifications.css';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
 import { Typography } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import jwt_decode from 'jwt-decode';
-import { getTodayRegister} from '../utils/UserFunctions'
 import { withRouter } from 'react-router-dom';
+import { sendCall, getPatientByUserID, getUserDetails} from '../utils/UserFunctions'
 
 
 const styles = theme => ({
@@ -39,8 +41,15 @@ class NavBar extends React.Component {
     this.state = {
       currentUser: {},
       vitalSigns: false,
+      doctorNumber: "",
+      patientNumber: "",
     };
     this.navigate = this.navigate.bind(this);
+  }
+
+  alertDoctor(){
+    console.log("TEST NAV ", this.state.doctorNumber, "  ", this.state.patientNumber)
+    sendCall(this.state.doctorNumber, this.state.patientNumber);
   }
 
   navigate(navigateTo) {
@@ -66,7 +75,13 @@ class NavBar extends React.Component {
       case 'Questionnaire':
         this.props.history.push(`/questionnaire`)
         break;
-      
+      case 'UserList':
+        this.props.history.push(`/userList`)
+        break;
+      case 'DiseaseList':
+        this.props.history.push(`/diseaseList`)
+        break;
+
         
       case 'ProfileUser':
         this.props.history.push(`/profileUser`)
@@ -88,6 +103,18 @@ class NavBar extends React.Component {
 
         this.setState({
           currentUser: decoded
+        })
+        getPatientByUserID(decoded._id).then((res)=>{
+          if(res){
+            getUserDetails(res.doctors[0]).then((doctor)=>{
+              this.setState({
+                doctorNumber: doctor.phone
+              })
+            })
+           this.setState({
+             patientNumber: res.phone
+           })
+          }
         })
       } catch (err) {
         alert(err);
@@ -135,6 +162,10 @@ class NavBar extends React.Component {
                   this.state.currentUser.lvlAccess === 3 ?
                     <div className={classes.buttons}>
                   
+                        <Button size="large" className={classes.margin} color="inherit" onClick={() => this.alertDoctor()}>
+                          Alert
+                          
+                      </Button>
                         <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("Symptoms")}>
                           Vital Signs
                           
@@ -160,12 +191,24 @@ class NavBar extends React.Component {
                       <Button size="large" className={classes.margin} color="inherit" onClick={this.logOut.bind(this)} >Sign Out</Button>
                     </div>
                     :
+                    this.state.currentUser.lvlAccess === 4 ?
+                     <div>
+                     <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("UserList")}>
+                        Users
+                    </Button>
+                      <Button size="large" className={classes.margin} color="inherit" onClick={() => this.navigate("DiseaseList")}>
+                        Disease
+                    </Button>
+                        <Button size="large" className={classes.margin} color="inherit" onClick={this.logOut.bind(this)} >Sign Out</Button>
+                     </div>
+                    :
                     null
                 }
 
 
 
               </Toolbar>
+              <NotificationContainer />
             </AppBar>
           </div>
           :

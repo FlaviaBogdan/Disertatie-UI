@@ -17,15 +17,16 @@ export const register = newUser => {
         })
 }
 
-export const login = user => {
+export const createUserDetails = details => {
     return axios
-        .post('http://localhost:5000/users/login', {
-            email: user.email,
-            password: user.password
+        .post('http://localhost:5000/userDetails/createUserDetails', {
+            firstName: details.firstName,
+            lastName: details.lastName,
+            lvlAccess: details.lvlAccess,
+            userID: details.userID,
+
         })
         .then(res => {
-            localStorage.setItem('usertoken', res.data);
-
             return res
         })
         .catch(err => {
@@ -34,8 +35,56 @@ export const login = user => {
 }
 
 
+export const registerUsersLvlAccess = newUser => {
+    return axios
+        .post('http://localhost:5000/users/registerUsersLvlAccess', {
+            email: newUser.email,
+            password: newUser.password,
+            lvlAccess: newUser.lvlAccess
+        })
+        .then(res => {
+            return res
+        })
+        .catch(err => {
+            return err.response.status
+        })
+}
+
+export const login = user => {
+    return axios
+        .post('http://localhost:5000/users/login', {
+            email: user.email,
+            password: user.password
+        })
+        .then(res => {
+            localStorage.setItem('usertoken', res.data);
+            console.log("user funct login ", res)
+            return res
+        })
+        .catch(err => {
+            return err.response.status
+        })
+}
+
+
+
 // PATIENTS
 // GET
+export const getPatientName = user => {
+    console.log("HERE USER: ", user)
+    return axios
+        .get('http://localhost:5000/patients/getPatientName',
+            { params: { userID: user } }
+        )
+        .then(res => {
+
+            return res.data
+        })
+        .catch(err => {
+            return err.response.status
+        })
+}
+
 export const getPatientTreatHistoryIDs = user => {
     console.log("HERE USER: ", user)
     return axios
@@ -67,10 +116,10 @@ export const getPatientsWithSameIllness = (severity, userID) => {
                 delete obj.phone;
                 delete obj.patientCode;
                 obj.illnessString = ""
-                obj.illness.forEach(function(illness){
-                    obj.illnessString = obj.illnessString + illness +", "
+                obj.illness.forEach(function (illness) {
+                    obj.illnessString = obj.illnessString + illness + ", "
                 })
-                 
+
                 let firstName = obj.firstName;
                 let lastName = obj.lastName;
                 obj.name = firstName + " " + lastName;
@@ -116,13 +165,13 @@ export const getPatientsWithSameIllness = (severity, userID) => {
 
                 })
                 obj.treatments = [];
-                obj.treatmentHistory.forEach(function(treatment){
+                obj.treatmentHistory.forEach(function (treatment) {
                     axios
                         .get('http://localhost:5000/treatmenthistory/getCurrentTreatmentForUser',
                             { params: { treatmentID: treatment } }
                         )
                         .then(res => {
-                            if(res.data.current === true){
+                            if (res.data.current === true) {
                                 delete res.data.createdBy;
                                 delete res.data.createdOn;
                                 delete res.data.notes;
@@ -140,8 +189,8 @@ export const getPatientsWithSameIllness = (severity, userID) => {
                                         console.log("PLEASEE2 getUserName222 ", err)
                                         return err
                                     })
-                                res.data.drugs.forEach(function(drug){
-                                    console.log("FSDFSFSDFds, " , drug)
+                                res.data.drugs.forEach(function (drug) {
+                                    console.log("FSDFSFSDFds, ", drug)
                                     let drugIDt = drug.medID;
                                     axios
                                         .get('http://localhost:5000/drugs/getDrugByID',
@@ -150,7 +199,7 @@ export const getPatientsWithSameIllness = (severity, userID) => {
                                             drug.name = res.data.Name;
                                             drug.administration = res.data.Administration;
                                             drug.concentration = res.data.Concentration;
-                                   
+
                                         })
                                         .catch(err => {
                                             return err
@@ -212,6 +261,44 @@ export const getPatientsForUser = (user, accessLvl) => {
         })
 }
 
+export const getPatientDoctorListByUser = patientDetails => {
+    return axios
+        .get('http://localhost:5000/patients/getPatientDoctorListByUser',
+            { params: { userID: patientDetails } })
+        .then(res => {
+            let arr = []
+            res.data.forEach(function (obj) {
+                let test = {}
+                axios
+                    .get('http://localhost:5000/userDetails/getUserName',
+                        { params: { userID: obj } }
+                    )
+                    .then(res => {
+                        test.name = res.data
+                    })
+                    .catch(err => {
+                        return err.response.status
+                    })
+                axios
+                    .get('http://localhost:5000/users/getUser',
+                        { params: { userID: obj } }
+                    )
+                    .then(res => {
+                        test.email = res.data
+                    })
+                    .catch(err => {
+                        return err.response.status
+                    })
+                arr.push(test)
+            })
+            console.log("PLEASEEEEEEEE 24", arr)
+            return arr
+        })
+        .catch(err => {
+            return err.response.status
+        })
+}
+
 export const getPatientDoctorList = patientDetails => {
     return axios
         .get('http://localhost:5000/patients/getPatientDoctorList',
@@ -241,6 +328,19 @@ export const getPatientAddressByUserID = userID => {
     return axios
         .get('http://localhost:5000/patients/getPatientAddressByUserID',
             { params: { patientID: userID } }
+        )
+        .then(res => {
+            return res.data
+        })
+        .catch(err => {
+            return err.response
+        })
+}
+
+export const sendCall = (doctorNr, patientNr) => {
+    return axios
+        .get('http://localhost:5000/patients/sendCall',
+            { params: { doctorNr: doctorNr, patientNr: patientNr } }
         )
         .then(res => {
             return res.data
@@ -451,7 +551,41 @@ export const addTreatmentID = details => {
 }
 
 
+
+
 // USER DETAILS
+
+export const deleteUser = _id => {
+    return axios
+        .delete('http://localhost:5000/users/deleteUser',
+            { params: { _id: _id } })
+        .then(res => {
+            console.log("MAYBE NOT ERROR ", res)
+            return res
+        })
+        .catch(err => {
+            console.log("MAYBE ERROR ", err)
+            return err.response.status
+        })
+}
+
+
+// DELETE
+export const deleteUserDetails = _id => {
+    console.log("WTFFFFFFF RE222S")
+    return axios
+        .delete('http://localhost:5000/userDetails/deleteUser',
+            { params: { _id: _id } })
+        .then(res => {
+            console.log("DELETE RE222S")
+            return res;
+        })
+        .catch(err => {
+            console.log("ERROR ", err)
+            return err.response.status
+        })
+}
+
 // get
 export const getNursesNames = () => {
     return axios
@@ -515,6 +649,74 @@ export const getUserName = user => {
             return err.response.status
         })
 }
+export const getUser = user => {
+    return axios
+        .get('http://localhost:5000/users/getUser',
+            { params: { userID: user } }
+        )
+        .then(res => {
+            return res.data
+        })
+        .catch(err => {
+            return err.response.status
+        })
+}
+
+export const getNursesAsUser = user => {
+    return axios
+        .get('http://localhost:5000/users/getNurses',
+    )
+        .then(res => {
+            res.data.forEach(function (dataUser) {
+                axios
+                    .get('http://localhost:5000/userDetails/getUserName',
+                        { params: { userID: dataUser._id } }
+                    )
+                    .then(res => {
+                        console.log("PLEASEE ", res.data)
+                        dataUser.name = res.data
+
+                    })
+                    .catch(err => {
+                        return err.response.status
+                    })
+
+            })
+            return res.data
+
+        })
+        .catch(err => {
+            return err.response.status
+        })
+}
+
+export const getDoctorsAsUser = user => {
+    return axios
+        .get('http://localhost:5000/users/getDoctors',
+    )
+        .then(res => {
+            res.data.forEach(function (dataUser) {
+                axios
+                    .get('http://localhost:5000/userDetails/getUserName',
+                        { params: { userID: dataUser._id } }
+                    )
+                    .then(res => {
+                        console.log("PLEASEE ", res.data)
+                        dataUser.name = res.data
+
+                    })
+                    .catch(err => {
+                        return err.response.status
+                    })
+
+            })
+            return res.data
+        })
+        .catch(err => {
+            return err.response.status
+        })
+}
+
 
 export const getDoctorsNames = () => {
     return axios
@@ -818,7 +1020,7 @@ export const addNote = details => {
             }
         )
         .then(res => {
-            return res.status
+            return res
         })
         .catch(err => {
             return err.response.status
@@ -857,6 +1059,7 @@ export const addVitalSigns = details => {
             heartRate: details.heartRate,
             respiratoryRate: details.respiratoryRate,
             date: details.date,
+            patientName: details.patientName,
             systolic: details.systolic,
             diastolic: details.diastolic,
         })
@@ -869,6 +1072,25 @@ export const addVitalSigns = details => {
 }
 
 // GET
+export const getVsForAllUsers = (users, currentUser) => {
+    console.log("FSFS USER FUNCTIONSS ", currentUser)
+    return axios
+        .get('http://localhost:5000/vitalsigns/getVsForAllUsers',
+            { params: { users: users, currentUser: currentUser } }
+        )
+        .then(res => {
+          
+
+            return res
+        })
+        .catch(err => {
+            return err.response
+        })
+}
+
+
+
+
 export const getVSForUser = details => {
     return axios
         .get('http://localhost:5000/vitalsigns/getVSForUser',
@@ -915,11 +1137,32 @@ export const addHealthStatus = details => {
 }
 
 
+export const addHealthStatusAndEmail = (details, toSend, message, subject) => {
+    return axios
+        .put('http://localhost:5000/vitalsigns/addHealthStatusAndEmail',
+            {
+                vitalSignsID: details.vitalSignsID,
+                status: details.status,
+                symptoms: details.symptoms,
+                toSend: toSend,
+                message: message,
+                subject: subject
+            }
+        )
+        .then(res => {
+            return res.status
+        })
+        .catch(err => {
+            return err.response.status
+        })
+}
+
+
 // GHQ
 // POST
 export const addQuestionnaire = details => {
     return axios
-        .get('http://localhost:5000/questionnaire/createGHQ', {
+        .post('http://localhost:5000/questionnaire/createGHQ', {
             patientID: details.patientID,
             answers: details.answers,
             scores: details.scores,
@@ -937,6 +1180,52 @@ export const addQuestionnaire = details => {
 export const getGHQbyPatient = details => {
     return axios
         .get('http://localhost:5000/questionnaire/getGHQbyPatient', { params: { patientID: details } })
+        .then(res => {
+            return res
+        })
+        .catch(err => {
+            return err.response
+        })
+}
+
+// DISEASe
+// GET
+
+export const createDisease = disease => {
+    console.log("USER FUNCTION DISEASE ", disease)
+    return axios
+        .post('http://localhost:5000/disease/createDisease',
+            { disease: disease }
+        )
+        .then(res => {
+            return res
+        })
+        .catch(err => {
+            return err.response
+        })
+}
+
+export const deleteDisease = _id => {
+    console.log("USER FUNCTION DISEASE ", _id)
+    return axios
+        .delete('http://localhost:5000/disease/deleteDisease',
+            { params: { _id: _id } })
+
+        .then(res => {
+            console.log("RETURN RES")
+            return res
+        })
+        .catch(err => {
+            return err.response
+        })
+}
+
+
+export const getDiseaseList = userID => {
+    return axios
+        .get('http://localhost:5000/disease/getDiseaseList',
+
+    )
         .then(res => {
             return res
         })

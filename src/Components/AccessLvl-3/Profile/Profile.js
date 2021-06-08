@@ -11,7 +11,7 @@ import ImageUploader from 'react-images-upload';
 import DialogAddress from './ProfileDialogs/ModifyAddress'
 import DialogGeneralData from './ProfileDialogs/ModifyGeneralData'
 import jwt_decode from 'jwt-decode';
-import { modifyUserImage, getUserDetails, getPatientByUserID, getUserPhoto, getPatientAddressByUserID} from '../../utils/UserFunctions'
+import { modifyUserImage, getPatientByUserID, getUserPhoto} from '../../utils/UserFunctions'
 
 const styles = theme => ({
     main: {

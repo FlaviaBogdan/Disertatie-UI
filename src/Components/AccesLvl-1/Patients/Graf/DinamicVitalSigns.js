@@ -5,11 +5,7 @@ import {
     schemeCategory10,
     schemeAccent,
     schemeDark2,
-    schemePaired,
-    schemePastel1,
-    schemePastel2,
     schemeSet1,
-    schemeSet2,
     schemeSet3,
 } from 'd3-scale-chromatic';
 import {
@@ -30,7 +26,6 @@ export default class Demo extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state.data = this.props.vitalSigns;
-        console.log("this.props.vitalSigns", this.props.vitalSigns)
     }
 
     componentWillMount(){

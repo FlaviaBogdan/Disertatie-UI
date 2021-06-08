@@ -1,27 +1,24 @@
 import React from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
-import NoteForm from './AddNoteForm';
+import ChangeIllnessForm from './ChangeIllnessForm';
 
-class NoteDialog extends React.Component {
+class IllnessDialog extends React.Component {
     state = {
         open: false,
-        treatmentID: ""
     };
     constructor(props) {
         super(props);
-        this.state.open = this.props.open;
-        this.state.treatmentID = this.props.treatmentID;
-        console.log("addNoteDialog")
+        this.state.open = this.props.open
     }
 
     handleClickOpen = () => {
         this.setState({ open: true });
     };
 
-    handleClose = () => {
+    handleClose = (test) => {
         this.setState({ open: false });
-        this.props.callback("addNoteDialog");
+        this.props.callback("addIllnessDialog", test);
     };
 
     render() {
@@ -35,7 +32,7 @@ class NoteDialog extends React.Component {
                     aria-describedby="Register can be modified"
                 >
                     <DialogContent>
-                        <NoteForm onClose={this.handleClose} treatmentID={this.state.treatmentID} currentUser={this.props.currentUser}/>
+                        <ChangeIllnessForm onClose={(test) => this.handleClose(test)} patientDetails={this.props.patient_id} illness={this.props.illness}/>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -43,4 +40,4 @@ class NoteDialog extends React.Component {
     }
 }
 
-export default NoteDialog;
+export default IllnessDialog;

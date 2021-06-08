@@ -1,12 +1,20 @@
 import * as React from 'react';
+import { Palette } from '@devexpress/dx-react-chart';
 import Paper from '@material-ui/core/Paper';
+import {
+    schemeCategory10,
+    schemeAccent,
+    schemeDark2,
+    schemeSet1,
+    schemeSet3,
+} from 'd3-scale-chromatic';
 import {
     ArgumentAxis,
     ValueAxis,
     Chart,
-    Title,
-    SplineSeries,
     Legend,
+    AreaSeries,
+    Title,
     Tooltip,
 } from '@devexpress/dx-react-chart-material-ui';
 export default class Demo extends React.PureComponent {
@@ -45,41 +53,22 @@ export default class Demo extends React.PureComponent {
         return (
             <Paper>
                 {this.state.loading ? null :
-                    <Chart
+                     <Chart
                         data={chartData}
                     >
                         <ArgumentAxis />
+                        <Palette scheme={schemeSet3} />
                         <ValueAxis />
-
-                        <SplineSeries
-                            name="Somatic symptoms "
-                            valueField="f1"
-                            argumentField="currentDate"
-                        />
-                        <SplineSeries
-                            name="Anxiety/insomnia"
-                            valueField="f2"
-                            argumentField="currentDate"
-                        />
-                        <SplineSeries
-                            name="Social dysfunction"
-                            valueField="f3"
-                            argumentField="currentDate"
-                        />
-                        <SplineSeries
-                            name="Severe depression"
-                            valueField="f4"
-                            argumentField="currentDate"
-                        />
-                        {/* <SplineSeries
-                            name="Total"
+                        <AreaSeries
+                  
                             valueField="total"
                             argumentField="currentDate"
-                        />  */}
-                        <Title text="Evolution" />
-                        <Legend />
-                        <Tooltip />
+                        />
+               
+                        <Title text="Total value" />
+                
                     </Chart>
+                  
                 }
             </Paper>
         );
