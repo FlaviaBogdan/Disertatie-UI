@@ -1,0 +1,115 @@
+[
+    {
+        "id": "q1",
+        "text": "Been feeling perfectly well & good health?"
+    },
+    {
+        "id": "q2",
+        "text": "Been feeling in need of a good tonic?"
+    },
+    {
+        "id": "q3",
+        "text": "Been feeling run down and out of sorts?"
+    },
+    {
+        "id": "q4",
+        "text": "Felt that you were ill?"
+    },
+    {
+        "id": "q5",
+        "text": "Been getting any pains in your head?"
+    },
+    {
+        "id": "q6",
+        "text": "Been getting a feeling of tightness or pressure in your head?"
+    },
+    {
+        "id": "q7",
+        "text": "Been having hot or cold spells?"
+    },
+    {
+        "id": "q8",
+        "text": "Lost much sleep over worry?"
+    },
+    {
+        "id": "q9",
+        "text": "Had difficulty in staying asleep once you are off?"
+    },
+    {
+        "id": "q10",
+        "text": "Feel constantly under strain?"
+    },
+    {
+        "id": "q11",
+        "text": "Been getting edgy and bad-tempered?"
+    },
+    {
+        "id": "q12",
+        "text": "Been getting scared or panicky for no reason?"
+    },
+    {
+        "id": "q13",
+        "text": "Found everything getting on top of you?"
+    },
+    {
+        "id": "q14",
+        "text": "Been feeling nervous and strung up all the time?"
+    },
+    {
+        "id": "q15",
+        "text": "Been managing to keep yourself busy and occupied?"
+    },
+    {
+        "id": "q16",
+        "text": "Been talking longer over the things you do?"
+    },
+    {
+        "id": "q17",
+        "text": "Felt on the whole you are doing things well?"
+    },
+    {
+        "id": "q18",
+        "text": "Been satisfied with the way you've carried out your tasks?"
+    },
+    {
+        "id": "q19",
+        "text": "Felt that you are playing a useful part in things?"
+    },
+    {
+        "id": "q20",
+        "text": "Felt capable of making decisions about thins?"
+    },
+    {
+        "id": "q21",
+        "text": "Been able to enjoy your normal day-to-day activities?"
+    },
+    {
+        "id": "q22",
+        "text": "Been thinking of yourself as a worthless person?"
+    },
+    {
+        "id": "q23",
+        "text": "Felt that life is entirely hopeless?"
+    },
+    {
+        "id": "q24",
+        "text": "Felt that life isn't worth living?"
+    },
+    {
+        "id": "q25",
+        "text": "Thought of the possibility that you might make away with yourself?"
+    },
+    {
+        "id": "q26",
+        "text": "Found at times you couldn't do anything because your nerves were too bad?"
+    },
+    {
+        "id": "q27",
+        "text": "Found yourself wishing you were dead and away from it all?"
+    },
+    {
+        "id": "q28",
+        "text": "Found that the idea of taking your life keep coming into your life."
+    }
+  
+]

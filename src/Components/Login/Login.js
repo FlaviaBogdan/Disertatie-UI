@@ -14,11 +14,24 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import './Login.css';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import Card from '@material-ui/core/Card';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 import { login } from '../utils/UserFunctions';
 import jwt_decode from 'jwt-decode';
+import { NotificationContainer, NotificationManager } from 'react-notifications'
+import 'react-notifications/lib/notifications.css';
 import CardContent from '@material-ui/core/CardContent';
 
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
+const vertical = 'top';
+const horizontal = 'right';
 const styles = theme => ({
+    title: {
+        fontSize: ' 0.5em',
+    },
 
 
     paper: {
@@ -68,9 +81,25 @@ class LoginForm extends React.Component {
         super(props);
         this.state = {
             email: '',
-            password: ''
+            password: '',
+            openNotification: false,
+            message: '',
+            vertical: 'top',
+            horizontal: 'right'
         }
     }
+
+    handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        this.setState({
+            openNotification: false
+        })
+ 
+    };
+
+
 
     changeField = (event) => {
         let userToLogin = { ...this.state };
@@ -86,20 +115,44 @@ class LoginForm extends React.Component {
             password: this.state.password
         }
         login(user).then(res => {
+       
             if (res.status === 200) {
                 console.log("RES", res)
                 const decoded = jwt_decode(res.data)
-                if (decoded.lvlAccess === 1 || decoded.lvlAccess === 2){
+                console.log("decoded ", decoded)
+                if (decoded.lvlAccess === 1 || decoded.lvlAccess === 2) {
+                    console.log("NOT HERE?? ")
                     this.props.history.push(`/patients`)
                 }
-                else{
+                else if (decoded.lvlAccess === 3) {
+                    this.props.history.push(`/vitalSigns`)
+                }
+                else if (decoded.lvlAccess === 4) {
+                    this.props.history.push(`/userList`)
+                }
+                else {
                     this.props.history.push(`/`)
                 }
-             
-            } else if (res.status === 401) {
-                alert("Wrong username or password");
+
+            } else if (res === 402) {
+                this.setState({
+                    message: "Email or password does not match!",
+                    type: 'warning',
+                    openNotification : true
+                })
+            } else if (res === 401) {
+                this.setState({
+                    message: "Email does not exist!",
+                    type: 'warning',
+                    openNotification: true
+                })
+        
             } else {
-                alert("An error ocurred");
+                this.setState({
+                    message: "An error has occurred",
+                    type: 'error',
+                    openNotification: true
+                })
             }
         })
         e.preventDefault();
@@ -141,9 +194,18 @@ class LoginForm extends React.Component {
                                 Autentifică-te
                             </Button>
                         </form>
+
+                        <Snackbar open={this.state.openNotification} autoHideDuration={3000} onClose={this.handleClose} anchorOrigin={{vertical, horizontal}}>
+                            <Alert onClose={this.handleClose} severity={this.state.type}>
+                                {this.state.message}
+                            </Alert>
+                        </Snackbar>
                     </CardContent>
                 </Card>
+                <NotificationContainer />
             </header>
+
+
         );
     }
 }

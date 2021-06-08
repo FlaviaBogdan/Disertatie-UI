@@ -1,0 +1,39 @@
+[
+    {
+        "oxygenLevel": {
+            "low": 80,
+            "lowMessage": "hypoxemia",
+            "high": 100
+        },
+        "temperature": {
+            "low": 36.1,
+            "high": 37,
+            "lowMessage": "hypothermia",
+            "highMessage": "fever"
+        },
+        "heartRate": {
+            "low": 60,
+            "high": 100,
+            "lowMessage": "Bradycardia ",
+            "highMessage": "Tachycardia "
+        },
+        "respiratoryRate": {
+            "low": 12,
+            "high": 18,
+            "lowMessage": "Bradypnea",
+            "highMessage": "tachypnea"
+        },
+        "systolic": {
+            "low": 110,
+            "high": 130,
+            "lowMessage": "hypotension",
+            "highMessage": "hypertension"
+        },
+        "diastolic": {
+            "low": 70,
+            "high": 80,
+            "lowMessage": "hypotension",
+            "highMessage": "hypertension"
+        }
+    }
+]

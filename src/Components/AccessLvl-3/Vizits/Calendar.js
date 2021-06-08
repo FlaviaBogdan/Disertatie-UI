@@ -3,7 +3,7 @@ import './Calendar.css';
 import Button from '@material-ui/core/Button'
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import { getPatientsNames, getNursesNames, getDoctorsNames,addVisits, deleteVisit, getUserDetails, getPatientAddressByID, modifyVisit, getVisitsForUser } from '../../utils/UserFunctions';
+import { getPatientAddressByUserID,getNursesNames, getDoctorsNames,addVisits, deleteVisit, getUserDetails,  modifyVisit, getVisitsForUser } from '../../utils/UserFunctions';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import jwt_decode from 'jwt-decode';
@@ -162,7 +162,7 @@ class Calendar extends React.Component {
       alert("USER NOT LOGGED IN")
     }
 
-    const patientsNameList = await getPatientsNames();
+    const patientsNameList = await getDoctorsNames();
 
     let newPatients = {
       patients: []
@@ -177,7 +177,7 @@ class Calendar extends React.Component {
     }
 
     const nurseNamesList = await getNursesNames();
-    const doctorNamesList = await getDoctorsNames();
+    // const doctorNamesList = await getDoctorsNames();
     
     const visitsForUser = await getVisitsForUser(this.state.currentUser, this.state.lvlAccess);
 
@@ -204,11 +204,11 @@ class Calendar extends React.Component {
     this.setState({
       data: newVisits.visits
     });
-    if(this.state.lvlAccess ===1){
+ 
       this.setState({
         resources: [{
-          fieldName: 'patientID',
-          title: 'Patient',
+          fieldName: 'doctorID',
+          title: 'Doctor',
           instances: newPatients.patients
         },
         {
@@ -218,28 +218,13 @@ class Calendar extends React.Component {
         }],
 
       })
-    }
-    if (this.state.lvlAccess === 2) {
-      this.setState({
-        resources: [{
-          fieldName: 'patientID',
-          title: 'Patient',
-          instances: newPatients.patients
-        },
-        {
-          fieldName: 'doctorID',
-          title: 'Doctor',
-          instances: doctorNamesList
-        }],
-
-      })
-    }
+    
    
   }
 
   async getPatientAddress(patientID) {
     let address = "";
-    await getPatientAddressByID(patientID).then((res) => {
+    await getPatientAddressByUserID(patientID).then((res) => {
       address = res.country + ", " + res.city + ", " + res.postalCode + ", " + res.street + ", " + res.adrLine;
     }).catch((er) => {
 
@@ -257,7 +242,7 @@ class Calendar extends React.Component {
 
       }
       if (added.patientVisit) {
-        await getPatientAddressByID(added.patientID).then((res) => {
+        await getPatientAddressByUserID(this.state.currentUser).then((res) => {
           address = res.country + ", " + res.city + ", " + res.postalCode + ", " + res.street + ", " + res.adrLine;
         });
       }
@@ -293,6 +278,23 @@ class Calendar extends React.Component {
         }
 
         await addVisits(visit);
+      }
+
+      if (this.state.lvlAccess === 3) {
+        const visit = {
+          createdBy: this.state.currentUser,
+          patientID: this.state.currentUser,
+          title: added.title,
+          startDate: added.startDate,
+          endDate: added.endDate,
+          nurseID: added.nurseID,
+          clinicVisit: added.clinicVisit,
+          patientVisit: added.patientVisit,
+          doctorID: added.doctorID,
+          address: address
+        }
+
+         await addVisits(visit);
       }
     
       const visits = await getVisitsForUser(this.state.currentUser, this.state.lvlAccess);

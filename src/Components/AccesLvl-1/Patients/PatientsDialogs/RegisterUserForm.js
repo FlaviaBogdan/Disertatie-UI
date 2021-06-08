@@ -10,7 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import withStyles from '@material-ui/core/styles/withStyles';
 import Input from '@material-ui/core/Input';
 import jwt_decode from 'jwt-decode';
-import { addPatientDetails, modifyAddressPD, modifyCM, addNotes, modifyIllness, addTreatmentID, addDrugsToTH, createHT, getNursesNames, getDoctorsNames, modifyMedicalStaff } from '../../../utils/UserFunctions'
+import { addPatientDetails, modifyAddressPD, modifyCM, getDiseaseList, addNotes, modifyIllness, addTreatmentID, addDrugsToTH, createHT, getNursesNames, getDoctorsNames, modifyMedicalStaff } from '../../../utils/UserFunctions'
 import { useTheme } from '@material-ui/core/styles';
 import { getDrugs } from '../../../utils/UserFunctions'
 import { DataGrid } from '@material-ui/data-grid';
@@ -145,7 +145,9 @@ class RegisterForm extends React.Component {
         phone: '',
         //illness
         disease: '',
+        disease2: '',
         diseaseArray: [],
+        diseaseList: [],
         diseaseArrStr: '',
         // medical staff
         nursesNames: [],
@@ -238,6 +240,21 @@ class RegisterForm extends React.Component {
 
     addDisease = () => {
         const diseaseStr = this.state.disease;
+        let diseaseArray = this.state.diseaseArray;
+        diseaseArray.push(diseaseStr);
+        let concatArr = "";
+        for (let i = 0; i < diseaseArray.length; i++) {
+            concatArr = concatArr + diseaseArray[i] + "; "
+        }
+        this.setState({
+            diseaseArray: diseaseArray,
+            diseaseArrStr: concatArr,
+            disease: ''
+        })
+    }
+
+    addDisease2 = () => {
+        const diseaseStr = this.state.disease2;
         let diseaseArray = this.state.diseaseArray;
         diseaseArray.push(diseaseStr);
         let concatArr = "";
@@ -368,10 +385,7 @@ class RegisterForm extends React.Component {
         const currentStep = this.state.activeStep;
         if (currentStep === 0) {
             if (this.state.initialPassword !== this.state.initialPasswordCheck) {
-                const nextStep = currentStep + 1;
-                this.setState({
-                    activeStep: nextStep
-                })
+                alert("Passwords dont match!")
             }
             else {
                 const newUser = {
@@ -438,6 +452,15 @@ class RegisterForm extends React.Component {
             })
         }
         else if (currentStep === 3) {
+            getDiseaseList().then((res)=>{
+                console.log(res, "res")
+                if(res.status === 200){
+                    console.log(res.data , "DATA DISEASE")
+                    this.setState({
+                        diseaseList : res.data
+                    })
+                }
+            })
             const patientDetails = {
                 patientDetailsID: this.state.patientDetailsID,
                 phone: this.state.phone,
@@ -463,7 +486,7 @@ class RegisterForm extends React.Component {
 
             }
             modifyIllness(patientDetails).then(res => {
-                if (res === 204) {
+                if (res.status === 204) {
                     getNursesNames().then(nurses => {
                         this.setState({
                             nursesNames: nurses
@@ -478,7 +501,7 @@ class RegisterForm extends React.Component {
                     this.setState({
                         activeStep: nextStep
                     })
-                } else if (res === 400) {
+                } else if (res.status === 400) {
                     alert("Not found");
                 } else {
                     alert("An error ocurred");
@@ -544,7 +567,7 @@ class RegisterForm extends React.Component {
                 "patientDetailsID": this.state.patientDetailsID
             }
             addNotes(dataToSend).then(res => {
-                if (res === 204) {
+                if (res.status === 204) {
                     this.props.onClose()
                 } else if (res === 400) {
                     alert("Not found");
@@ -918,6 +941,42 @@ class RegisterForm extends React.Component {
                                                                         container
                                                                         spacing={1}
                                                                     >
+                                                                        <Grid item xs={9}>
+                                                                          
+                                                                                <ValidationTextField
+                                                                                    InputProps={{
+                                                                                        className: classes.multilineColor
+                                                                                    }}
+                                                                                    id="disease2"
+                                                                                    select
+                                                                                    label="Disease from system"
+                                                                                    fullWidth
+                                                                                    value={this.state.disease2}
+                                                                                    onChange={this.changeField.bind(this)}
+                                                                                InputLabelProps={{
+                                                                                    shrink: true,
+                                                                                }}
+                                                                                    SelectProps={{
+                                                                                        native: true,
+                                                                                    }}
+                                                                                    variant="outlined"
+                                                                                >
+                                                                                    {this.state.diseaseList.map((disease) => (
+                                                                                        <option key={disease._id} value={disease.name}>
+                                                                                            {disease.name}
+                                                                                        </option>
+                                                                                    )
+                                                                                    )}
+                                                                                </ValidationTextField>
+                                                                           
+                                                                        </Grid>
+                                                                        <Grid item xs={3}>
+                                                                            <center>
+                                                                                <Button variant="outlined" size="medium" color="primary" onClick={this.addDisease2} style={{ marginTop: '10px' }}>
+                                                                                    Add
+                                                                                </Button>
+                                                                            </center>
+                                                                        </Grid>
                                                                         <Grid item xs={9}>
                                                                             <ValidationTextField
                                                                                 InputProps={{

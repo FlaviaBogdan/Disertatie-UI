@@ -5,16 +5,11 @@ import DarkTheme from "./Theme/DarkTheme"
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import App from './App';
 
-
 ReactDOM.render(
   <React.StrictMode>
     <MuiThemeProvider theme={DarkTheme}>
-    {/* <ThemeProvider> */}
       <App />,
-    {/* </ThemeProvider> */}
     </MuiThemeProvider>
-
   </React.StrictMode>,
   document.getElementById('root')
 );
-
